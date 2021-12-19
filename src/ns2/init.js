@@ -17,7 +17,9 @@ export async function main(ns) {
 /** @param {NS} ns **/
 async function networkDiscovery(ns) {
     while (true) {
-        await ns.asleep(5000);
-        commonLib.execScript(nk, script_network_discovery, server_home, 1);
+        await ns.asleep(10000);
+        
+        ns.toast("Starting network discovery", "info");
+        commonLib.execScript(ns, script_network_discovery, server_home, 1);
     }
 }

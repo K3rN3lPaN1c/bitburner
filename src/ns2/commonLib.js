@@ -4,7 +4,7 @@ export function testLib(ns) {
 }
 
 /** @param {NS} ns **/
-export function execScript(ns, scriptName, targetServer, threadCount, args) {
+export async function execScript(ns, scriptName, targetServer, threadCount, args) {
     scriptRam = ns.getScriptRam(scriptName);
     serverAvailableRam = ns.getServerMaxRam -ns.getServerUsedRam;
     if (scriptRam > serverAvailableRam) {

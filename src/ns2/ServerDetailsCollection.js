@@ -12,7 +12,7 @@ export default class ServerDetailsCollection {
 
     serverAlreadyAdded(serverName) {
         for (let i = 0; i < this.serverObjects.length; i++) {
-            if (this.serverObjects[i].name === serverName) {
+            if (this.serverObjects[i].name === serverName || serverName === "home") {
                 return true;
             }
         }
@@ -46,6 +46,7 @@ export default class ServerDetailsCollection {
             debugStuff.push({
                 "name": this.serverObjects[i].name,
                 "value": this.serverObjects[i].moneyPerGrowThreadsPerSeconds,
+                "maxMoney": this.serverObjects[i].maxMoney,
             });
         }
         return debugStuff;

@@ -1,13 +1,38 @@
 import ServerDetailsCollection from "ServerDetailsCollection.js";
 
+var scannedAround = [];
+var targetServerDetailsCollection;
+var botServerDetailsCollection;
+
 /** @param {import(".").NS } ns */
 export async function main(ns) {
-    var scannedServers = ns.scan("home");
-    var targetServerDetailsCollection = new ServerDetailsCollection(ns);
-    var botServerDetailsCollection = new ServerDetailsCollection(ns);
+    targetServerDetailsCollection = new ServerDetailsCollection(ns);
+    botServerDetailsCollection = new ServerDetailsCollection(ns);
 
+    scanAndGatherTargetAndBotServers(ns, "home");
+
+    //targetServerDetailsCollection.getByName("iron-gym").testing();
+
+    targetServerDetailsCollection.sortByDesc("moneyPerGrowThreadsPerSeconds");
+    ns.tprint(
+        targetServerDetailsCollection.debug()
+    );
+    targetServerDetailsCollection.sortByDesc("maxMoney");
+    ns.tprint(
+        targetServerDetailsCollection.debug()
+    );
+}
+
+function scanAndGatherTargetAndBotServers(ns, startingServer) {
+    if (scannedAround.includes(startingServer)) {
+        return;
+    }
+    scannedAround.push(startingServer);
+
+    var scannedServers = ns.scan(startingServer);
     for (let i = 0; i < scannedServers.length; i++) {
         let serverName = scannedServers[i];
+        scanAndGatherTargetAndBotServers(ns, serverName);
 
         if (!ns.hasRootAccess(serverName)) {
             continue;
@@ -21,14 +46,4 @@ export async function main(ns) {
         targetServerDetailsCollection.add(serverName);
 
     }
-
-    //targetServerDetailsCollection.getByName("iron-gym").testing();
-
-    ns.tprint(
-        targetServerDetailsCollection.debug()
-    );
-    targetServerDetailsCollection.sortByDesc("moneyPerGrowThreadsPerSeconds");
-    ns.tprint(
-        targetServerDetailsCollection.debug()
-    );
 }
