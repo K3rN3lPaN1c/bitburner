@@ -1,8 +1,9 @@
 export default class ServerDetails {
-    /** @param {import(".").NS } ns */
+    /** @param {import(".").NS } #ns */
     #ns;
     name = 0;
 
+    /** @param {import(".").NS } ns */
     constructor(ns, name) {
         this.#ns = ns;
         this.name = name;
@@ -11,11 +12,9 @@ export default class ServerDetails {
     get growTime() {
         return this.#ns.getGrowTime(this.name);
     }
-
     get hackTime() {
         return this.#ns.getHackTime(this.name);
     }
-
     get weakenTime() {
         return this.#ns.getWeakenTime(this.name);
     }
@@ -24,32 +23,45 @@ export default class ServerDetails {
         return this.#ns.getServerGrowth(this.name);
     }
 
+    get moneyAvailable() {
+        return this.#ns.getServerMoneyAvailable(this.name);
+    }
     get maxMoney() {
         return this.#ns.getServerMaxMoney(this.name);
     }
+    get moneyAvailableRatio() {
+        return this.moneyAvailable/this.maxMoney;
+    }
 
+    get usedRam() {
+        return this.#ns.getServerUsedRam(this.name);
+    }
     get maxRam() {
         return this.#ns.getServerMaxRam(this.name);
+    }
+    get availableRam() {
+        return this.maxRam-this.usedRam;
     }
 
     get minSecurityLevel() {
         return this.#ns.getServerMinSecurityLevel(this.name);
     }
-
-    get moneyAvailable() {
-        return this.#ns.getServerMoneyAvailable(this.name);
+    get securityLevel() {
+        return this.#ns.getServerSecurityLevel(this.name);
+    }
+    get securityLevelDifference() {
+        return this.securityLevel - this.minSecurityLevel;
     }
 
     get requiredHackingLevel() {
         return this.#ns.getServerRequiredHackingLevel(this.name);
     }
-
-    get securityLevel() {
-        return this.#ns.getServerSecurityLevel(this.name);
+    get hasRootAccess() {
+        return this.#ns.hasRootAccess();
     }
-
-    get usedRam() {
-        return this.#ns.getServerUsedRam(this.name);
+    
+    get hackThreadsToGetHalfMoney() {
+        return hackAnalyzeThreads(this.name, this.moneyAvailable/2);
     }
 
     get multiplierToReachMaxMoney() {
