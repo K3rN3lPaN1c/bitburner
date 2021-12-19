@@ -76,7 +76,7 @@ function handleScannedServer(ns, scannedServer) {
 
     gainRootAccessOnServer(ns, scannedServer);
     ns.tprintf("*** GAINED ROOT ACCESS TO A NEW SERVER: %s ***", scannedServer);
-    ns.toast("*** GAINED ROOT ACCESS TO A NEW SERVER: %s ***", scannedServer);
+    ns.toast(ns.sprintf("*** GAINED ROOT ACCESS TO A NEW SERVER: %s ***", scannedServer));
 }
 
 /** @param {NS} ns **/
