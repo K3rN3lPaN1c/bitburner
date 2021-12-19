@@ -14,12 +14,12 @@ const program_names = [
     program_SQLInject
 ];
 
-var alreadyCompletedScanAroundServers;
-var canHackThisManyPorts;
+let alreadyCompletedScanAroundServers;
+let canHackThisManyPorts;
 
 /** @param {NS} ns **/
 export async function main(ns) {
-    //ns.tprint("Starting automatic network discovery and gaining root access to foreign servers.");
+    ns.toast("Starting network discovery", "info");
     resetConfigVariables(ns);
     disableLogForFunctionsUsed(ns);
     networkDiscoveryAndGainingRootAccessAroundServer(ns, server_home);
@@ -58,7 +58,7 @@ function networkDiscoveryAndGainingRootAccessAroundServer(ns, targetServer) {
     }
     alreadyCompletedScanAroundServers.push(targetServer);
 
-    var scannedServers = ns.scan(targetServer);
+    let scannedServers = ns.scan(targetServer);
 
     if (scannedServers.length) {
         scannedServers.forEach(function(scannedServer){
@@ -76,6 +76,7 @@ function handleScannedServer(ns, scannedServer) {
 
     gainRootAccessOnServer(ns, scannedServer);
     ns.tprintf("*** GAINED ROOT ACCESS TO A NEW SERVER: %s ***", scannedServer);
+    ns.toast("*** GAINED ROOT ACCESS TO A NEW SERVER: %s ***", scannedServer);
 }
 
 /** @param {NS} ns **/
@@ -97,16 +98,16 @@ function gainRootAccessOnServer(ns, serverName) {
     if (ns.fileExists("BruteSSH.exe", "home")) {
         ns.brutessh(serverName);
     }
-    if (ns.fileExists("FTPCrack.exe")) {
+    if (ns.fileExists("FTPCrack.exe", "home")) {
         ns.ftpcrack(serverName);
     };
-    if (ns.fileExists("relaySMTP.exe")) {
+    if (ns.fileExists("relaySMTP.exe", "home")) {
         ns.relaysmtp(serverName);
     };
-    if (ns.fileExists("HTTPWorm.exe")) {
+    if (ns.fileExists("HTTPWorm.exe", "home")) {
         ns.httpworm(serverName);
     };
-    if (ns.fileExists("SQLInject.exe")) {
+    if (ns.fileExists("SQLInject.exe", "home")) {
         ns.sqlinject(serverName);
     };
 
