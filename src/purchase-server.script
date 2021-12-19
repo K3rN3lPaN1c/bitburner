@@ -1,0 +1,33 @@
+//Usage: run purchase-server.script $ram $botnetScript $targetHost
+//Eg.: run purchase-server.script 256 botnet.script n00dles
+import * as cl from "commonLib.script";
+
+var ram = args[0];
+var botnetScript = args[1];
+var targetHost = args[2];
+var serverPrefixName = "botnet-";
+
+try {
+    purchaseNewServer(serverPrefixName, ram);
+}
+catch (err) {
+    cl.dprint(err.message);
+}
+
+function purchaseNewServer(serverPrefix, ramAmount) {
+    if (isNaN(ramAmount))
+        throw new Error(
+            'Usage: run purchase-server.script $RAM');
+
+    cl.dprint(" RAM is set to: " + ramAmount + "GB");
+    var i = 0;
+    while (i < getPurchasedServerLimit()) {
+        if (getServerMoneyAvailable("home") > getPurchasedServerCost(ramAmount)) {
+            var hostname = purchaseServer(serverPrefix + i, ramAmount);
+            cl.dprint("Server:" + hostname + "now ready to use");
+            cl.copyBotnetScript(hostname, botnetScript)
+            cl.startBotnetScript(hostname, botnetScript, targetHost)
+            ++i;
+        }
+    }
+}

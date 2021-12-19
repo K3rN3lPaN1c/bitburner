@@ -1,0 +1,11 @@
+// Usage: run destroyAll.script --force
+// WARNING! IT WILL DESTROY ALL OF YOUR PURCHASED SERVER!
+import * as cl from "commonLib.script";
+
+if (args[0] == "--force") {
+	cl.dprint("Deleting all our servers.");
+	cl.destoryAllMyServers()
+}
+else {
+	cl.dprint("It's dangerous, if you really want to delete all the servers, use --force");
+}

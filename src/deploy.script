@@ -1,0 +1,47 @@
+// Usage: run deploy.script $targetHost $deployScript
+// Eg.:  run deploy.script n00dles botnet.script
+import * as cl from "commonLib.script";
+var targetHostName = args[0]
+var botnetScriptName = args[1]
+
+if (!serverExists(targetHostName)) {
+	throw new Error(
+		'Unkown host');
+}
+
+if (!fileExists(botnetScriptName, "home")) {
+	throw new Error(
+		'Unkown script');
+}
+
+try {
+	deployBotnetScript(targetHostName, botnetScriptName)
+}
+catch (err) {
+	tprint(err.message);
+}
+cl.dprint("All done, exiting..");
+
+function deployBotnetScript(targetHost, botnetScript) {
+	var hostsFound = scan("home");
+	cl.dprint("We found these hosts: " + hostsFound);
+	var i = 0;
+	while (i < hostsFound.length) {
+		var currentServ = hostsFound[i];
+		cl.dprint("Working on server: " + currentServ);
+		i++;
+		if (currentServ.startsWith("darkweb")) {
+			cl.dprint("This is the darkweb, skipping..");
+			continue;
+		}
+		//TODO: Add more port opening step
+		if (!currentServ.startsWith("botnet")) {
+			brutessh(currentServ);
+			cl.dprint("Port 22 opened on host: " + currentServ);
+			nuke(currentServ);
+			cl.dprint("Root access gained on host: " + currentServ);
+		}
+		cl.copyBotnetScript(currentServ, botnetScript)
+		cl.startBotnetScript(currentServ, botnetScript, targetHost)
+	}
+}

@@ -1,0 +1,36 @@
+//Common functions
+
+function dprint(msg) {
+	var isoDate = new Date().toISOString();
+	tprint(isoDate + " - " + msg);
+}
+
+function copyBotnetScript(currentServ, botnetScript) {
+	scp(botnetScript, currentServ);
+	dprint("botnet scipt copied to: " + currentServ);
+}
+
+function startBotnetScript(currentServ, botnetScript, targetHost) {
+	var getBotnetScriptMemSize = getScriptRam(botnetScript);
+	var maxThread = getServerMaxRam(currentServ) / getBotnetScriptMemSize;
+	maxThread = maxThread - maxThread % 1;
+	exec(botnetScript, currentServ, maxThread, targetHost);
+	dprint("Starting botnet script on: " + currentServ + " with " + maxThread + " threads");
+}
+
+function destroyMyServer(serverName) {
+	if (serverExists(serverName)) {
+		killall(serverName);
+		dprint("Server: " + serverName + " destroyed");
+		deleteServer(serverName);
+	}
+}
+
+function destoryAllMyServers() {
+	var myServers = getPurchasedServers();
+	var serverCounter = 0;
+	while (serverCounter < myServers.length) {
+		destroyMyServer(myServers[serverCounter]);
+		serverCounter++;
+	}
+}
