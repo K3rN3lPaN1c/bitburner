@@ -1,0 +1,25 @@
+//var target = "n00dles";
+//var target = "foodnstuff";
+//var target = "joesguns";
+//var target = "harakiri-sushi";
+//var target = "iron-gym";
+//var target = "zer0";
+//var target = "silver-helix";
+//var target = "johnson-ortho";
+//var target = "omega-net";
+//var target = "the-hub";
+//var target = "aevum-police";
+var target = "catalyst";
+
+var moneyThresh = getServerMaxMoney(target) * 0.75;
+var securityThresh = getServerMinSecurityLevel(target) + 4;
+
+while (true) {
+    if (getServerSecurityLevel(target) > securityThresh) {
+        weaken(target);
+    } else if (getServerMoneyAvailable(target) < moneyThresh) {
+        grow(target);
+    } else {
+        hack(target);
+    }
+}

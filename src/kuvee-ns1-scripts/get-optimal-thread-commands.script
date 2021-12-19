@@ -1,0 +1,23 @@
+var scripts = [
+    "early-hack-template.script",
+    "purchase-server-8gb.script",
+    "redeploy-to-outer-servers.script"
+];
+
+var serverName = "home";
+
+var i = 0;
+
+while (i < scripts.length) {
+    printRunProcessUsingMaxRam(serverName, scripts[i]);
+    i++;
+}
+
+function printRunProcessUsingMaxRam(serverName, scriptName) {
+    var serverMaxRam = getServerMaxRam(serverName) - getServerUsedRam(serverName);
+    //var serverMaxRam = getServerRam(serverName)[0];
+    var scriptRam = getScriptRam(scriptName);
+    var naturalDividend = serverMaxRam / scriptRam;
+    var flooredDivident = Math.floor(naturalDividend);
+    tprint("run " + scriptName + " -t " + flooredDivident);
+}

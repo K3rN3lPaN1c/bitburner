@@ -1,0 +1,8 @@
+var myServers = getPurchasedServers();
+var i = 0;
+
+while (i < myServers.length) {
+    killall(myServers[i]);
+    deleteServer(myServers[i]);
+    i++;
+}

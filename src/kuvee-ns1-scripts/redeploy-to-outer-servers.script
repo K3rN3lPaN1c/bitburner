@@ -1,0 +1,174 @@
+var myLocalScriptName = "early-hack-template.script";
+var myLocalServerName = "home";
+//var myLocalServerName = "foodnstuff";
+
+var canHackThisManyPorts = 0;
+
+var globalDebug = false;
+var globalIndent = 0;
+
+var maxMoneyServerName;
+var maxMoneyServerValue = 0;
+
+var alreadyCompletedServers = ["home"];
+var alreadyCompletedScanAroundServers = [];
+
+prepareNumberOfHackablePorts();
+startDeploy(myLocalScriptName, myLocalServerName);
+tprint("Max Money sever: " + maxMoneyServerName + ", " + maxMoneyServerValue);
+
+function prepareNumberOfHackablePorts() {
+    if (fileExists("BruteSSH.exe")) {
+        canHackThisManyPorts++;
+    };
+    if (fileExists("FTPCrack.exe")) {
+        canHackThisManyPorts++;
+    };
+    if (fileExists("relaySMTP.exe")) {
+        canHackThisManyPorts++;
+    };
+    if (fileExists("HTTPWorm.exe")) {
+        canHackThisManyPorts++;
+    };
+    if (fileExists("SQLInject.exe")) {
+        canHackThisManyPorts++;
+    };
+    tprint("canHackThisManyPorts: " + canHackThisManyPorts);
+}
+
+
+function startDeploy(scriptName, startServerName) {
+    if (alreadyCompletedScanAroundServers.includes(startServerName)) {
+        return;
+    }
+    alreadyCompletedScanAroundServers.push(startServerName);
+
+    myLog("============================================");
+    myLog("Starting scanning around: " + startServerName);
+
+    var scanResults = scan(startServerName);
+    var i = 0;
+
+    while (i < scanResults.length) {
+        var serverName = scanResults[i];
+        i++;
+
+        myLog("--------------------------------------------");
+        myLog("Commencing operations on: !!! " + serverName + " !!!");
+
+        if (!isServerCompatible(serverName)) {
+            continue;
+        }
+
+        calculateMaxMoneyServer(serverName);
+        breakServerOpen(serverName);
+        killProcessesAndReplaceScript(serverName, scriptName);
+        runProcessUsingMaxRam(serverName, scriptName);
+        startDeploy(scriptName, serverName);
+    }
+}
+
+function calculateMaxMoneyServer(serverName) {
+    if (getServerMaxMoney(serverName) > maxMoneyServerValue) {
+        maxMoneyServerValue = getServerMaxMoney(serverName);
+        maxMoneyServerName = serverName;
+    }
+}
+
+function isServerCompatible(serverName) {
+    
+
+    myLog("***");
+    myLog("Checking server compatibility");
+    myLog("***");
+
+    myLog("Checking if server already processed");
+    if (alreadyCompletedServers.includes(serverName)) {
+        myLog("Already processed");
+        return false;
+    }
+    alreadyCompletedServers.push(serverName);
+
+    if( hasRootAccess(serverName) ) {
+        return true;
+    }
+
+    myLog("Checking hacking levels");
+    if (getServerRequiredHackingLevel(serverName) > getHackingLevel()) {
+        myLog("Insufficient hacking level");
+        return false;
+    }
+
+    myLog("Checking number of required open ports");
+    if (getServerNumPortsRequired(serverName) > canHackThisManyPorts) {
+        myLog("Too much open ports required");
+        return false;
+    }
+
+    myLog("Server is compatible");
+    return true;
+}
+
+function breakServerOpen(serverName) {
+
+    if(hasRootAccess(serverName)) {
+        return;
+    }
+
+    myLog("***");
+    myLog("Breaking server open");
+    myLog("***");
+    
+    if (fileExists("BruteSSH.exe", "home")) {
+        myLog("Commencing BruteSSH");
+        brutessh(serverName);
+    }
+    if (fileExists("FTPCrack.exe")) {
+        myLog("Commencing FTPCrack");
+        ftpcrack(serverName);
+    };
+    if (fileExists("relaySMTP.exe")) {
+        myLog("Commencing relaySMTP");
+        relaysmtp(serverName);
+    };
+    if (fileExists("HTTPWorm.exe")) {
+        myLog("Commencing HTTPWorm");
+        httpworm(serverName);
+    };
+    if (fileExists("SQLInject.exe")) {
+        myLog("Commencing SQLInject");
+        sqlinject(serverName);
+    };
+    
+    myLog("Commencing Nuke");
+    nuke(serverName);
+}
+
+function killProcessesAndReplaceScript(serverName, scriptName) {
+    myLog("***");
+    myLog("Killing running processes and deploying script");
+    myLog("***");
+    killall(serverName)
+    scp(scriptName, serverName);
+}
+
+function runProcessUsingMaxRam(serverName, scriptName) {
+    myLog("***");
+    myLog("Starting script with optimal threadcount");
+    myLog("***");
+    var serverMaxRam = getServerRam(serverName)[0];
+    var scriptRam = getScriptRam(scriptName);
+    var naturalDividend = serverMaxRam / scriptRam;
+    var flooredDivident = Math.floor(naturalDividend);
+    if (flooredDivident > 0) {
+        exec(scriptName, serverName, flooredDivident);
+    }
+}
+
+function myLog(logString) {
+    if (globalDebug === false) {
+        return;
+    }
+
+    tprint(logString);
+}

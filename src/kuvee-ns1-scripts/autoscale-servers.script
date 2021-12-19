@@ -1,0 +1,39 @@
+import * as awsLib from "awsLib.script";
+
+var defaultRamOfServers = 8;
+var multiplierOfRamOfServers = 4;
+var currentRamOfServers = 0;
+var serverNamePrefix = "kuvee-server";
+
+autoscale();
+
+function autoscale() {
+    while (true) {
+        var highestBuyableRamOfServers = getHighestBuyableRamOfServers();
+        if (highestBuyableRamOfServers > currentRamOfServers) {
+            tprint("Destroying servers with ram: " + currentRamOfServers);
+            awsLib.destoryAllMyServers();
+            tprint("Buying new servers with ram: " + highestBuyableRamOfServers);
+            awsLib.buyAllServersWithRam(serverNamePrefix, highestBuyableRamOfServers);
+            tprint("New servers are ready");
+            currentRamOfServers = highestBuyableRamOfServers;
+        }
+
+        sleep(1000);
+    }
+}
+
+function getHighestBuyableRamOfServers() {
+    var ramOfServersToCheck = defaultRamOfServers > currentRamOfServers ? defaultRamOfServers : currentRamOfServers;
+    var highestBuyableRam = 0;
+    while (true) {
+        if (awsLib.canBuyAllServersWithRam(ramOfServersToCheck)) {
+            highestBuyableRam = ramOfServersToCheck;
+            ramOfServersToCheck *= multiplierOfRamOfServers;
+            continue;
+        }
+
+        break;
+    }
+    return highestBuyableRam;
+}
