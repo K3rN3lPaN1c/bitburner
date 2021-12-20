@@ -18,9 +18,14 @@ export async function main(ns) {
     let serversToWeakenCollection = new ServerDetailsCollection(ns);
     targetServerDetailsCollection.getServersForWeakening(serversToWeakenCollection);
 
-    
+    ns.tprint("serversToHackCollection.debug()");
     ns.tprint(serversToHackCollection.debug());
+
+    ns.tprint("serversToGrowCollection.debug()");
     ns.tprint(serversToGrowCollection.debug());
+
+    serversToWeakenCollection.limit(5);
+    ns.tprint("serversToWeakenCollection.debug()");
     ns.tprint(serversToWeakenCollection.debug());
 
 

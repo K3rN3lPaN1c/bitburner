@@ -61,7 +61,7 @@ export default class ServerDetails {
     }
     
     get hackThreadsToGetHalfMoney() {
-        return hackAnalyzeThreads(this.name, this.moneyAvailable/2);
+        return this.#ns.hackAnalyzeThreads(this.name, this.moneyAvailable/2);
     }
 
     get multiplierToReachMaxMoney() {

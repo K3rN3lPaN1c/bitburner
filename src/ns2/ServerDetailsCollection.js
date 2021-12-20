@@ -48,11 +48,12 @@ export default class ServerDetailsCollection {
         for (let i = 0; i < this.serverObjects.length; i++) {
             debugStuff.push({
                 "name": this.serverObjects[i].name,
-                "value": this.serverObjects[i].moneyPerGrowThreadsPerSeconds,
+                "moneyPerGrowThreadsPerSeconds": this.serverObjects[i].moneyPerGrowThreadsPerSeconds,
                 "maxMoney": this.serverObjects[i].maxMoney,
+                "securityLevel": this.serverObjects[i].securityLevel,
             });
         }
-        return debugStuff;
+        return JSON.stringify(debugStuff,null,2); 
     }
 
     getAvailableRam() {
@@ -111,11 +112,16 @@ export default class ServerDetailsCollection {
                 serversForWeakening.add(serverObject.name);
             }
         }
-        this.#ns.tprint(serversForWeakening);
 
         serversForWeakening.sortByDesc("moneyPerGrowThreadsPerSeconds");
 
         return serversForWeakening;
+    }
+
+    limit(limit) {
+        while (this.serverObjects.length > limit) {
+            this.serverObjects.pop();
+        }
     }
 
 }
