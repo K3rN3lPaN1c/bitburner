@@ -13,33 +13,43 @@ export async function main(ns) {
     
     let serversToHackCollection = new ServerDetailsCollection(ns);
     targetServerDetailsCollection.getServersForHacking(serversToHackCollection);
+
+    hacking(ns, botServerDetailsCollection, serversToHackCollection);
+
     let serversToGrowCollection = new ServerDetailsCollection(ns);
     targetServerDetailsCollection.getServersForGrowing(serversToGrowCollection);
+
     let serversToWeakenCollection = new ServerDetailsCollection(ns);
     targetServerDetailsCollection.getServersForWeakening(serversToWeakenCollection);
-
-    ns.tprint("serversToHackCollection.debug()");
-    ns.tprint(serversToHackCollection.debug());
-
-    ns.tprint("serversToGrowCollection.debug()");
-    ns.tprint(serversToGrowCollection.debug());
-
     serversToWeakenCollection.limit(5);
-    ns.tprint("serversToWeakenCollection.debug()");
-    ns.tprint(serversToWeakenCollection.debug());
 
 
+    
+    //ns.tprint("serversToHackCollection.debug()");
+    //ns.tprint(serversToHackCollection.debug());
+
+    //ns.tprint("serversToGrowCollection.debug()");
+    //ns.tprint(serversToGrowCollection.debug());
+
+    
+    //ns.tprint("serversToWeakenCollection.debug()");
+    //ns.tprint(serversToWeakenCollection.debug());
+
+    
 
     //targetServerDetailsCollection.getByName("iron-gym").testing();
 
-    /*
     targetServerDetailsCollection.sortByDesc("moneyPerGrowThreadsPerSecondsFromBase");
+    //targetServerDetailsCollection.sortByDesc("maxMoney");
     
-    targetServerDetailsCollection.sortByDesc("maxMoney");
     ns.tprint(
         targetServerDetailsCollection.debug()
     );
-    */
+    
+
+    scannedAround = [];
+    targetServerDetailsCollection = null;
+    botServerDetailsCollection = null;
 }
 
 function scanAndGatherTargetAndBotServers(ns, startingServer) {
@@ -64,5 +74,30 @@ function scanAndGatherTargetAndBotServers(ns, startingServer) {
         }
 
         targetServerDetailsCollection.add(serverName);
+    }
+}
+
+function hacking(ns, botServerDetailsCollection, serversToHackCollection) {
+    ns.tprint("Starting: HACKING");
+    while(serversToHackCollection.hasNext()) {
+        let serverToHack = serversToHackCollection.getNext();
+        let name = serverToHack.name;
+        let hackTime = serverToHack.hackTime;
+        let hackThreadsToGetAllMoney = Math.ceil(serverToHack.hackThreadsToGetAllMoney);
+
+        let hackRamCost = ns.getScriptRam("hack_0.js", "home");
+        let totalHackRamCost = hackRamCost * hackThreadsToGetAllMoney;
+
+        let debug = {
+            "name": name,
+            "hackTime": ns.tFormat(hackTime),
+            "hackThreadsToGetAllMoney": hackThreadsToGetAllMoney,
+            "hackRamCost": hackRamCost,
+            "totalHackRamCost": totalHackRamCost,
+        }
+
+        
+
+        //ns.tprint(JSON.stringify(debug, null, 2));
     }
 }

@@ -3,11 +3,26 @@ import ServerDetails from "ServerDetails.js";
 export default class ServerDetailsCollection {
     /** @param {import(".").NS } ns */
     #ns;
+    #internalCounter = 0;
     
     serverObjects = [];
 
     constructor(ns) {
         this.#ns = ns;
+    }
+
+    hasNext() {
+        return this.#internalCounter < this.serverObjects.length;
+    }
+
+    getNext() {
+        let next = this.serverObjects[this.#internalCounter];
+        this.#internalCounter++;
+        return next;
+    }
+
+    reset() {
+        this.#internalCounter = 0;
     }
 
     serverAlreadyAdded(serverName) {
