@@ -43,7 +43,11 @@ export default class ServerDetails {
         return this.#ns.getServerMaxRam(this.name);
     }
     get availableRam() {
-        return this.maxRam-this.usedRam;
+        let availableRam = this.maxRam-this.usedRam;
+        if (this.name === "home") {
+            availableRam -= 32;
+        }
+        return Math.max(availableRam, 0);
     }
 
     get minSecurityLevel() {

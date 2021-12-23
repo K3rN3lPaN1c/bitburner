@@ -51,7 +51,10 @@ function calculateNumberOfOpenablePorts(ns) {
     });
 }
 
-/** @param {NS} ns **/
+/**
+ * @param {NS} ns *
+ * @param {string} targetServer
+ */
 function networkDiscoveryAndGainingRootAccessAroundServer(ns, targetServer) {
     if (alreadyCompletedScanAroundServers.includes(targetServer)) {
         return;
@@ -67,7 +70,10 @@ function networkDiscoveryAndGainingRootAccessAroundServer(ns, targetServer) {
     }
 }
 
-/** @param {NS} ns **/
+/**
+ * @param {NS} ns *
+ * @param {string} scannedServer
+ */
 function handleScannedServer(ns, scannedServer) {
     networkDiscoveryAndGainingRootAccessAroundServer(ns, scannedServer);
     if (!isServerReadyToBeBrokenOpen(ns, scannedServer)) {
@@ -79,37 +85,37 @@ function handleScannedServer(ns, scannedServer) {
     ns.toast(ns.sprintf("*** GAINED ROOT ACCESS TO A NEW SERVER: %s ***", scannedServer));
 }
 
-/** @param {NS} ns **/
+/**
+ * @param {NS} ns *
+ * @param {string} serverName
+ */
 function isServerReadyToBeBrokenOpen(ns, serverName) {
-    if (
-        serverName === server_home
+    return !(serverName === server_home
         || ns.hasRootAccess(serverName)
         || ns.getServerRequiredHackingLevel(serverName) > ns.getHackingLevel()
-        || ns.getServerNumPortsRequired(serverName) > canHackThisManyPorts
-    ) {
-        return false;
-    }
-
-    return true;
+        || ns.getServerNumPortsRequired(serverName) > canHackThisManyPorts);
 }
 
-/** @param {NS} ns **/
+/**
+ * @param {NS} ns *
+ * @param {string} serverName
+ */
 function gainRootAccessOnServer(ns, serverName) {
     if (ns.fileExists("BruteSSH.exe", "home")) {
         ns.brutessh(serverName);
     }
     if (ns.fileExists("FTPCrack.exe", "home")) {
         ns.ftpcrack(serverName);
-    };
+    }
     if (ns.fileExists("relaySMTP.exe", "home")) {
         ns.relaysmtp(serverName);
-    };
+    }
     if (ns.fileExists("HTTPWorm.exe", "home")) {
         ns.httpworm(serverName);
-    };
+    }
     if (ns.fileExists("SQLInject.exe", "home")) {
         ns.sqlinject(serverName);
-    };
+    }
 
     ns.nuke(serverName);
 }

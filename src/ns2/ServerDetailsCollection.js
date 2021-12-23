@@ -54,11 +54,15 @@ export default class ServerDetailsCollection {
         return false;
     }
 
+    /**
+     * @param {ServerDetails} serverDetails
+     */
+    add(serverDetails) {
+        this.serverObjects.push(serverDetails);
+    }
+
     addByName(serverName) {
         if (!this.serverAlreadyAdded(serverName)) {
-            if (serverName === "home") {
-
-            }
             this.serverObjects.push(new ServerDetails(this.ns, serverName));
         }
     }
@@ -115,8 +119,8 @@ export default class ServerDetailsCollection {
 
     getServersForHacking(serversForHacking) {
         for (let i = 0; i < this.serverObjects.length; i++) {
-            
             let serverObject = this.serverObjects[i];
+
 
             if (
                 serverObject.moneyAvailableRatio > 0.95
@@ -127,13 +131,10 @@ export default class ServerDetailsCollection {
         }
 
         serversForHacking.sortByDesc("hackThreadsToGetHalfMoney");
-
-        return serversForHacking;
     }
 
     getServersForGrowing(serversForGrowing) {
         for (let i = 0; i < this.serverObjects.length; i++) {
-            
             let serverObject = this.serverObjects[i];
 
             if (
@@ -145,26 +146,18 @@ export default class ServerDetailsCollection {
         }
 
         serversForGrowing.sortByDesc("moneyPerGrowThreadsPerSeconds");
-
-        return serversForGrowing;
     }
     
     getServersForWeakening(serversForWeakening) {
         for (let i = 0; i < this.serverObjects.length; i++) {
-            
             let serverObject = this.serverObjects[i];
 
-            if (
-                serverObject.moneyAvailableRatio <= 0.95
-                && serverObject.securityLevelDifference >= 5
-            ) {
+            if (serverObject.securityLevelDifference >= 5) {
                 serversForWeakening.addByName(serverObject.name);
             }
         }
 
         serversForWeakening.sortByDesc("moneyPerGrowThreadsPerSeconds");
-
-        return serversForWeakening;
     }
 
     getNextServerWithEnoughRam(totalRamCost, scriptRam) {
@@ -182,7 +175,7 @@ export default class ServerDetailsCollection {
             }
 
             if (i === this.serverObjects.length - 1 || currentServer > totalRamCost) {
-                this.removeByName(currentServer.name);
+                //this.removeByName(currentServer.name);
                 return currentServer;
             }
         }

@@ -1,72 +1,53 @@
 import * as commonLib from "commonLib.js";
 import ServerDetailsCollection from "ServerDetailsCollection.js";
+import ServerDetails from "ServerDetails.js";
 
-let scannedAround = [];
 let targetServerDetailsCollection;
 let botServerDetailsCollection;
 
 /** @param {import(".").NS } ns */
 export async function main(ns) {
     commonLib.disableLogs(ns);
+    ns.toast("Starting attacks on all servers", "info");
 
     targetServerDetailsCollection = new ServerDetailsCollection(ns);
     botServerDetailsCollection = new ServerDetailsCollection(ns);
+    botServerDetailsCollection.add(new ServerDetails(ns, "home"));
 
-    scanAndGatherTargetAndBotServers(ns, "home");
+    scanAndGatherTargetAndBotServers(ns, botServerDetailsCollection, targetServerDetailsCollection);
+
+
 
     let serversToHackCollection = new ServerDetailsCollection(ns);
-    targetServerDetailsCollection.getServersForHacking(serversToHackCollection);
+    targetServerDetailsCollection.clone().getServersForHacking(serversToHackCollection);
+    //serversToHackCollection.addByName("iron-gym");
     await hacking(ns, botServerDetailsCollection, serversToHackCollection);
 
     let serversToGrowCollection = new ServerDetailsCollection(ns);
-    targetServerDetailsCollection.getServersForGrowing(serversToGrowCollection);
+    targetServerDetailsCollection.clone().getServersForGrowing(serversToGrowCollection);
+    // serversToGrowCollection.addByName("iron-gym");
     await growing(ns, botServerDetailsCollection, serversToGrowCollection);
 
     let serversToWeakenCollection = new ServerDetailsCollection(ns);
-    targetServerDetailsCollection.getServersForWeakening(serversToWeakenCollection);
+    targetServerDetailsCollection.clone().getServersForWeakening(serversToWeakenCollection);
+    //serversToWeakenCollection.addByName("iron-gym");
     await weakening(ns, botServerDetailsCollection, serversToWeakenCollection);
-
-    //targetServerDetailsCollection.getByName("iron-gym").testing();
-
-    //targetServerDetailsCollection.sortByDesc("moneyPerGrowThreadsPerSecondsFromBase");
-    //targetServerDetailsCollection.sortByDesc("maxMoney");
-
-    // ns.tprint(
-    //     targetServerDetailsCollection.debug()
-    // );
-
-
-    scannedAround = [];
-    targetServerDetailsCollection = null;
-    botServerDetailsCollection = null;
 }
 
 /**
  * @param {import(".").NS } ns
- * @param {string} startingServer
+ * @param {import("./ServerDetailsCollection.js").ServerDetailsCollection } botServerDetailsCollection
+ * @param {import("./ServerDetailsCollection.js").ServerDetailsCollection } targetServerDetailsCollection
  * */
-function scanAndGatherTargetAndBotServers(ns, startingServer) {
-    if (scannedAround.includes(startingServer)) {
-        return;
-    }
-    scannedAround.push(startingServer);
+function scanAndGatherTargetAndBotServers(ns, botServerDetailsCollection, targetServerDetailsCollection) {
+    let rootServers = commonLib.getRootServersList(ns);
 
-    let scannedServers = ns.scan(startingServer);
-    for (let i = 0; i < scannedServers.length; i++) {
-        let serverName = scannedServers[i];
-        scanAndGatherTargetAndBotServers(ns, serverName);
-
-        if (!ns.hasRootAccess(serverName)) {
-            continue;
+    for (let i = 0 ; i < rootServers.length ; i++) {
+        let currentServerName = rootServers[i];
+        botServerDetailsCollection.addByName(currentServerName);
+        if (ns.getServerMaxMoney(currentServerName) > 0) {
+            targetServerDetailsCollection.addByName(currentServerName);
         }
-
-        botServerDetailsCollection.addByName(serverName);
-
-        if (ns.getServerMaxMoney(serverName) <= 0) {
-            continue;
-        }
-
-        targetServerDetailsCollection.addByName(serverName);
     }
 }
 
@@ -76,6 +57,7 @@ function scanAndGatherTargetAndBotServers(ns, startingServer) {
  * @param {import("./ServerDetailsCollection.js").ServerDetailsCollection } targetServerDetailsCollection
  */
 async function hacking(ns, botServerDetailsCollection, targetServerDetailsCollection) {
+    ns.print("===============================================")
     ns.print("Starting: HACKING");
     if (targetServerDetailsCollection.length === 0) {
         ns.print("No Servers to hack");
@@ -85,7 +67,7 @@ async function hacking(ns, botServerDetailsCollection, targetServerDetailsCollec
         let execTime = targetServer.hackTime;
         let targetNumOfThreads = Math.ceil(targetServer.hackThreadsToGetAllMoney);
 
-        await handleServer(
+        await attackServer(
             ns,
             targetServer,
             execTime,
@@ -103,6 +85,7 @@ async function hacking(ns, botServerDetailsCollection, targetServerDetailsCollec
  * @param {import("./ServerDetailsCollection.js").ServerDetailsCollection } targetServerDetailsCollection
  */
 async function growing(ns, botServerDetailsCollection, targetServerDetailsCollection) {
+    ns.print("===============================================")
     ns.print("Starting: GROWING");
     if (targetServerDetailsCollection.length === 0) {
         ns.print("No Servers to grow");
@@ -112,7 +95,7 @@ async function growing(ns, botServerDetailsCollection, targetServerDetailsCollec
         let execTime = targetServer.growTime;
         let targetNumOfThreads = Math.ceil(targetServer.growThreadsToReachMaxMoney);
 
-        await handleServer(
+        await attackServer(
             ns,
             targetServer,
             execTime,
@@ -130,6 +113,7 @@ async function growing(ns, botServerDetailsCollection, targetServerDetailsCollec
  * @param {import("./ServerDetailsCollection.js").ServerDetailsCollection } targetServerDetailsCollection
  */
 async function weakening(ns, botServerDetailsCollection, targetServerDetailsCollection) {
+    ns.print("===============================================")
     ns.print("Starting: WEAKENING");
     if (targetServerDetailsCollection.length === 0) {
         ns.print("No Servers to weaken");
@@ -139,7 +123,7 @@ async function weakening(ns, botServerDetailsCollection, targetServerDetailsColl
         let execTime = targetServer.weakenTime;
         let targetNumOfThreads = Math.ceil(targetServer.weakenThreadsToReachMinimumSecurity);
 
-        await handleServer(
+        await attackServer(
             ns,
             targetServer,
             execTime,
@@ -160,33 +144,23 @@ async function weakening(ns, botServerDetailsCollection, targetServerDetailsColl
  * @param {string} scriptName
  * @param {string} attackName
  */
-async function handleServer(ns, targetServer, execTime, targetNumOfThreads, botServerDetailsCollection, scriptName, attackName) {
+async function attackServer(ns, targetServer, execTime, targetNumOfThreads, botServerDetailsCollection, scriptName, attackName) {
+    let targetGroupedServerProcesses = commonLib.getTargetGroupedServerProcesses(ns);
+
+    if (targetServer.name in targetGroupedServerProcesses && scriptName in targetGroupedServerProcesses[targetServer.name]) {
+        targetNumOfThreads -= targetGroupedServerProcesses[targetServer.name][scriptName].threads;
+    }
+
+    if (targetNumOfThreads <= 0) {
+        return;
+    }
+
     let localBotServerDetailsCollection = botServerDetailsCollection.clone();
     let execRamCost = ns.getScriptRam(scriptName, "home");
     let totalExecRamCost = execRamCost * targetNumOfThreads;
     let currentDate = new Date();
     let execFinishDate = new Date();
     execFinishDate.setTime(currentDate.getTime() + execTime)
-
-    // let debug = {
-    //     "name": targetServer.name,
-    //     "execTime": ns.tFormat(execTime),
-    //     "targetNumOfThreads": targetNumOfThreads,
-    //     "execRamCost": execRamCost,
-    //     "totalExecRamCost": totalExecRamCost,
-    // }
-    // ns.print(JSON.stringify(debug, null, 2));
-    // ns.print("-----------------------------------------------")
-    // ns.print(
-    //     ns.sprintf(
-    //         "Searching for servers to %s %s (t=%d, %dGB)",
-    //         attackName,
-    //         targetServer.name,
-    //         targetNumOfThreads,
-    //         totalExecRamCost
-    //     )
-    // );
-    // ns.print("-----------------------------------------------")
 
     while (targetNumOfThreads > 0) {
         let currentServer = localBotServerDetailsCollection.getNextServerWithEnoughRam(totalExecRamCost, execRamCost);
@@ -199,9 +173,9 @@ async function handleServer(ns, targetServer, execTime, targetNumOfThreads, botS
             currentServer.calculateMaxThreadsForScript(execRamCost),
             targetNumOfThreads
         );
+
         let currentExecRamCost = numOfThreads * execRamCost;
 
-        ns.print("===============================================")
         ns.print(
             ns.sprintf(
                 "Starting %sing script on %s (t=%d, %dGB), target: %s",
