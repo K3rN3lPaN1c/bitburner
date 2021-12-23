@@ -34,7 +34,9 @@ export async function main(ns) {
 
     networkDiscovery(ns);
     await ns.asleep(100);
-    autoStartLocalHacks(ns);
+    if (await ns.prompt("Auto start local hacks?")) {
+        autoStartLocalHacks(ns);
+    }
 
     while (true) {
         await ns.asleep(1000);
@@ -48,20 +50,25 @@ async function networkDiscovery(ns) {
         commonLib.execScript(ns, script_network_discovery, server_home);
     }
 }
+
 /** @param {import(".").NS } ns */
+/** @param {NS} ns **/
 async function autoStartLocalHacks(ns) {
     while(true){
         await ns.asleep(10000);
-        
+
         for (let i = 0 ; i < baseTargetServers.length; i++) {
             let targetServer = baseTargetServers[i];
             let scriptName = ns.sprintf(script_name_template, i+1);
-    
+            let availableRam = ns.getServerMaxRam(server_home)-ns.getServerUsedRam(server_home);
+            let numOfThreads = Math.min(10000, Math.floor(availableRam/ns.getScriptRam(scriptName, server_home)) - 5);
+
             if (
                 !ns.isRunning(scriptName, server_home)
                 && ns.hasRootAccess(targetServer)
+                && numOfThreads > 0
             ) {
-                ns.exec(scriptName, server_home, 10000);
+                ns.exec(scriptName, server_home, numOfThreads);
             }
         }
 

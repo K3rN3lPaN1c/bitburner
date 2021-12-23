@@ -10,7 +10,7 @@ export async function main(ns) {
     botServerDetailsCollection = new ServerDetailsCollection(ns);
 
     scanAndGatherTargetAndBotServers(ns, "home");
-    
+
     let serversToHackCollection = new ServerDetailsCollection(ns);
     targetServerDetailsCollection.getServersForHacking(serversToHackCollection);
 
@@ -24,28 +24,28 @@ export async function main(ns) {
     serversToWeakenCollection.limit(5);
 
 
-    
+
     //ns.tprint("serversToHackCollection.debug()");
     //ns.tprint(serversToHackCollection.debug());
 
     //ns.tprint("serversToGrowCollection.debug()");
     //ns.tprint(serversToGrowCollection.debug());
 
-    
+
     //ns.tprint("serversToWeakenCollection.debug()");
     //ns.tprint(serversToWeakenCollection.debug());
 
-    
+
 
     //targetServerDetailsCollection.getByName("iron-gym").testing();
 
     targetServerDetailsCollection.sortByDesc("moneyPerGrowThreadsPerSecondsFromBase");
     //targetServerDetailsCollection.sortByDesc("maxMoney");
-    
+
     ns.tprint(
         targetServerDetailsCollection.debug()
     );
-    
+
 
     scannedAround = [];
     targetServerDetailsCollection = null;
@@ -62,13 +62,13 @@ function scanAndGatherTargetAndBotServers(ns, startingServer) {
     for (let i = 0; i < scannedServers.length; i++) {
         let serverName = scannedServers[i];
         scanAndGatherTargetAndBotServers(ns, serverName);
-        
+
         if (!ns.hasRootAccess(serverName)) {
             continue;
         }
-        
+
         botServerDetailsCollection.add(serverName);
-        
+
         if (ns.getServerMaxMoney(serverName) <= 0) {
             continue;
         }
@@ -85,7 +85,7 @@ function hacking(ns, botServerDetailsCollection, serversToHackCollection) {
         let hackTime = serverToHack.hackTime;
         let hackThreadsToGetAllMoney = Math.ceil(serverToHack.hackThreadsToGetAllMoney);
 
-        let hackRamCost = ns.getScriptRam("hack_0.js", "home");
+        let hackRamCost = ns.getScriptRam("x", "home");
         let totalHackRamCost = hackRamCost * hackThreadsToGetAllMoney;
 
         let debug = {
@@ -96,7 +96,7 @@ function hacking(ns, botServerDetailsCollection, serversToHackCollection) {
             "totalHackRamCost": totalHackRamCost,
         }
 
-        
+
 
         //ns.tprint(JSON.stringify(debug, null, 2));
     }
