@@ -1,5 +1,3 @@
-import * as awsLib from "awsLib.script";
-
 var defaultRamOfServers = 8;
 var multiplierOfRamOfServers = 4;
 var currentRamOfServers = 0;
@@ -12,9 +10,9 @@ function autoscale() {
         var highestBuyableRamOfServers = getHighestBuyableRamOfServers();
         if (highestBuyableRamOfServers > currentRamOfServers) {
             tprint("Destroying servers with ram: " + currentRamOfServers);
-            awsLib.destoryAllMyServers();
+            destoryAllMyServers();
             tprint("Buying new servers with ram: " + highestBuyableRamOfServers);
-            awsLib.buyAllServersWithRam(serverNamePrefix, highestBuyableRamOfServers);
+            buyAllServersWithRam(serverNamePrefix, highestBuyableRamOfServers);
             tprint("New servers are ready");
             currentRamOfServers = highestBuyableRamOfServers;
         }
@@ -27,7 +25,7 @@ function getHighestBuyableRamOfServers() {
     var ramOfServersToCheck = defaultRamOfServers > currentRamOfServers ? defaultRamOfServers : currentRamOfServers;
     var highestBuyableRam = 0;
     while (true) {
-        if (awsLib.canBuyAllServersWithRam(ramOfServersToCheck)) {
+        if (canBuyAllServersWithRam(ramOfServersToCheck)) {
             highestBuyableRam = ramOfServersToCheck;
             ramOfServersToCheck *= multiplierOfRamOfServers;
             continue;
@@ -36,4 +34,54 @@ function getHighestBuyableRamOfServers() {
         break;
     }
     return highestBuyableRam;
+}
+
+function canBuyServerWithRam(ramOfServer) {
+    if (ramOfServer > getPurchasedServerMaxRam()) {
+        return false;
+    }
+
+    return getServerMoneyAvailable("home") > getPurchasedServerCost(ramOfServer);
+}
+
+function canBuyMoreServers() {
+    return getPurchasedServers().length < getPurchasedServerLimit();
+}
+
+function canBuyAllServersWithRam(ramOfServer) {
+    if (ramOfServer > getPurchasedServerMaxRam()) {
+        return false;
+    }
+
+    var costOfAllServersWithRam = getPurchasedServerLimit() * getPurchasedServerCost(ramOfServer);
+    return getServerMoneyAvailable("home") > costOfAllServersWithRam
+}
+
+function buyServerWithRam(serverNamePrefix, ramOfServer) {
+    return purchaseServer(serverNamePrefix + "-" + ramOfServer + "GB", ramOfServer);
+}
+
+function buyAllServersWithRam(serverNamePrefix, ramOfServer) {
+    var serverCounter = 0;
+    while (serverCounter < getPurchasedServerLimit()) {
+        buyServerWithRam(serverNamePrefix, ramOfServer);
+        serverCounter++;
+    }
+}
+
+function destroyMyServer(serverName) {
+    if (serverExists(serverName)) {
+        killall(serverName);
+        deleteServer(serverName);
+    }
+}
+
+function destoryAllMyServers() {
+    var myServers = getPurchasedServers();
+    var serverCounter = 0;
+
+    while (serverCounter < myServers.length) {
+        destroyMyServer(myServers[serverCounter]);
+        serverCounter++;
+    }
 }

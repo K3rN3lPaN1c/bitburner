@@ -2,44 +2,72 @@ import ServerDetails from "ServerDetails.js";
 
 export default class ServerDetailsCollection {
     /** @param {import(".").NS } ns */
-    #ns;
-    #internalCounter = 0;
+    ns;
+    internalCounter = 0;
     
     serverObjects = [];
 
     constructor(ns) {
-        this.#ns = ns;
+        this.ns = ns;
+    }
+
+    clone() {
+        return Object.assign(Object.create(Object.getPrototypeOf(this)), this);
+    }
+
+    get length() {
+        return this.serverObjects.length;
     }
 
     hasNext() {
-        return this.#internalCounter < this.serverObjects.length;
+        return this.internalCounter < this.serverObjects.length;
     }
 
+    /**
+     *
+     * @returns {ServerDetails}
+     */
     getNext() {
-        let next = this.serverObjects[this.#internalCounter];
-        this.#internalCounter++;
+        let next = this.serverObjects[this.internalCounter];
+        this.internalCounter++;
         return next;
     }
 
     reset() {
-        this.#internalCounter = 0;
+        this.internalCounter = 0;
     }
 
     serverAlreadyAdded(serverName) {
         if (undefined === serverName) {
             return true;
         }
+
+        if (serverName === "home") {
+            return true;
+        }
+
         for (let i = 0; i < this.serverObjects.length; i++) {
-            if (this.serverObjects[i].name === serverName || serverName === "home") {
+            if (this.serverObjects[i].name === serverName) {
                 return true;
             }
         }
         return false;
     }
 
-    add(serverName) {
+    addByName(serverName) {
         if (!this.serverAlreadyAdded(serverName)) {
-            this.serverObjects.push(new ServerDetails(this.#ns, serverName));
+            if (serverName === "home") {
+
+            }
+            this.serverObjects.push(new ServerDetails(this.ns, serverName));
+        }
+    }
+
+    removeByName(serverName) {
+        for (let i = 0; i < this.serverObjects.length; i++) {
+            if (this.serverObjects[i].name === serverName) {
+                this.serverObjects.splice(i, 1);
+            }
         }
     }
 
@@ -50,6 +78,12 @@ export default class ServerDetailsCollection {
             }
         }
         return false;
+    }
+
+    sortByAsc(propertyName) {
+        this.serverObjects.sort(function(a,b) {
+            return a[propertyName] - b[propertyName];
+        });
     }
 
     sortByDesc(propertyName) {
@@ -88,7 +122,7 @@ export default class ServerDetailsCollection {
                 serverObject.moneyAvailableRatio > 0.95
                 && serverObject.securityLevelDifference < 5
             ) {
-                serversForHacking.add(serverObject.name);
+                serversForHacking.addByName(serverObject.name);
             }
         }
 
@@ -106,7 +140,7 @@ export default class ServerDetailsCollection {
                 serverObject.moneyAvailableRatio <= 0.95
                 && serverObject.securityLevelDifference < 5
             ) {
-                serversForGrowing.add(serverObject.name);
+                serversForGrowing.addByName(serverObject.name);
             }
         }
 
@@ -124,13 +158,34 @@ export default class ServerDetailsCollection {
                 serverObject.moneyAvailableRatio <= 0.95
                 && serverObject.securityLevelDifference >= 5
             ) {
-                serversForWeakening.add(serverObject.name);
+                serversForWeakening.addByName(serverObject.name);
             }
         }
 
         serversForWeakening.sortByDesc("moneyPerGrowThreadsPerSeconds");
 
         return serversForWeakening;
+    }
+
+    getNextServerWithEnoughRam(totalRamCost, scriptRam) {
+        this.sortByAsc("availableRam");
+
+        if (this.serverObjects.length === 0) {
+            return false;
+        }
+
+        for (let i = 0 ; i < this.serverObjects.length; i++) {
+            let currentServer = this.serverObjects[i];
+
+            if (currentServer.availableRam < scriptRam) {
+                continue;
+            }
+
+            if (i === this.serverObjects.length - 1 || currentServer > totalRamCost) {
+                this.removeByName(currentServer.name);
+                return currentServer;
+            }
+        }
     }
 
     limit(limit) {
