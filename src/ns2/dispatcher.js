@@ -1,17 +1,23 @@
 import * as commonLib from "commonLib.js";
 
 const SERVER_HOME = "home";
+const SCRIPT_DISPATCHER = "dispatcher.js";
 const SCRIPT_NETWORK_DISCOVERY = "networkDiscoveryAndGainingRootAccess.js";
 const SCRIPT_ATTACK_ALL_SERVERS = "attackAllServers.js";
+const SCRIPT_MANAGE_PURCHASED_SERVERS = "managePurchasedServers.js";
+const SCRIPT_GANG_MANAGEMENT = "gangManagement.js";
 
 //const FILES_BASE_URL = "https://raw.githubusercontent.com/K3rN3lPaN1c/bitburner/feature/kuvee-ns-scripts/src/ns2/";
 const FILES_BASE_URL = "file:///C:/Bitburner/bitburner/src/ns2/";
 
 const FILES_TO_DOWNLOAD = [
+    SCRIPT_DISPATCHER,
     SCRIPT_ATTACK_ALL_SERVERS,
     SCRIPT_NETWORK_DISCOVERY,
+    SCRIPT_MANAGE_PURCHASED_SERVERS,
+    SCRIPT_GANG_MANAGEMENT,
+
     "init.js",
-    "formulasLib.js",
     "showServerMap.js",
     "ServerDetails.js",
     "ServerDetailsCollection.js",
@@ -20,6 +26,8 @@ const FILES_TO_DOWNLOAD = [
 const ENABLE_NETWORK_DISCOVERY = true;
 const ENABLE_KEEP_DISPATCHER_RUNNING = true;
 const ENABLE_ATTACK_ALL_SERVERS = true;
+const ENABLE_PURCHASED_SERVERS_MANAGER = true;
+const ENABLE_GANG_MANAGEMENT = false;
 
 /** @param {import(".").NS } ns */
 export async function main(ns) {
@@ -28,15 +36,13 @@ export async function main(ns) {
     await downloadAllFiles(ns);
     await prepareScripts(ns);
 
+    manageGangs(ns);
     networkDiscovery(ns);
-    await ns.asleep(10);
     attackAllServers(ns);
-    await ns.asleep(10);
     managePurchasedServers(ns);
 
-
-    while (ENABLE_KEEP_DISPATCHER_RUNNING) {
-        await ns.asleep(1000);
+    if (ENABLE_KEEP_DISPATCHER_RUNNING) {
+        ns.spawn(SCRIPT_DISPATCHER);
     }
 }
 
@@ -61,18 +67,38 @@ async function prepareScripts(ns) {
 
 
 /** @param {import(".").NS } ns */
-async function networkDiscovery(ns) {
-    while (ENABLE_NETWORK_DISCOVERY) {
-        await ns.asleep(5000);
+function networkDiscovery(ns) {
+    if (ENABLE_NETWORK_DISCOVERY) {
         ns.exec(SCRIPT_NETWORK_DISCOVERY, SERVER_HOME);
+    } else {
+        ns.toast("No network discovery!", "warning");
     }
 }
 
 
 /** @param {import(".").NS } ns */
-async function attackAllServers(ns) {
-    while (ENABLE_ATTACK_ALL_SERVERS) {
-        await ns.asleep(5000);
+function attackAllServers(ns) {
+    if (ENABLE_ATTACK_ALL_SERVERS) {
         ns.exec(SCRIPT_ATTACK_ALL_SERVERS, SERVER_HOME);
+    } else {
+        ns.toast("No attack all servers!", "warning");
+    }
+}
+
+/** @param {import(".").NS } ns */
+function managePurchasedServers(ns) {
+    if (ENABLE_PURCHASED_SERVERS_MANAGER) {
+        ns.exec(SCRIPT_MANAGE_PURCHASED_SERVERS, SERVER_HOME);
+    } else {
+        ns.toast("No purchased server management!", "warning");
+    }
+}
+
+/** @param {import(".").NS } ns */
+function manageGangs(ns) {
+    if (ENABLE_GANG_MANAGEMENT && ns.gang.inGang()) {
+        ns.exec(SCRIPT_GANG_MANAGEMENT, SERVER_HOME);
+    } else {
+        ns.toast("No gang management!", "warning");
     }
 }
