@@ -45,7 +45,7 @@ export default class ServerDetails {
     get availableRam() {
         let availableRam = this.maxRam-this.usedRam;
         if (this.name === "home") {
-            availableRam -= 32;
+            availableRam -= 150;
         }
         return Math.max(availableRam, 0);
     }

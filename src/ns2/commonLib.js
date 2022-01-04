@@ -1,50 +1,3 @@
-export const CREATED_SCRIPT_GROW = "grow.script";
-export const CREATED_SCRIPT_WEAKEN = "weaken.script";
-export const CREATED_SCRIPT_HACK = "hack.script";
-
-export const CREATED_SCRIPTS = [
-    CREATED_SCRIPT_GROW,
-    CREATED_SCRIPT_WEAKEN,
-    CREATED_SCRIPT_HACK,
-]
-
-/** @param {import(".").NS } ns */
-export function testLib(ns) {
-    ns.alert("CommonLib works like a magic!");
-}
-
-/** @param {import(".").NS } ns
- * @param {string} scriptName
- * @param {string} targetServer
- */
-export function execScript(ns, scriptName, targetServer) {
-    let scriptRam = ns.getScriptRam(scriptName, targetServer);
-    let serverAvailableRam = ns.getServerMaxRam -ns.getServerUsedRam;
-    if (scriptRam > serverAvailableRam) {
-        ns.alert(ns.sprintf("Cannot run script %s on server %s, %d / %d", scriptName, targetServer, scriptRam, serverAvailableRam));
-        return;
-    }
-
-    ns.exec(scriptName, targetServer);
-}
-
-/** @param {import(".").NS } ns */
-export function disableLogs(ns) {
-    ns.disableLog("wget");
-    ns.disableLog("getServerMaxMoney");
-    ns.disableLog("getServerMoneyAvailable");
-    ns.disableLog("getServerSecurityLevel");
-    ns.disableLog("getServerMinSecurityLevel");
-    ns.disableLog("getServerMaxRam");
-    ns.disableLog("getServerUsedRam");
-    ns.disableLog("scan");
-    ns.disableLog("asleep");
-    ns.disableLog("scp");
-    ns.disableLog("exec");
-
-    ns.clearLog();
-}
-
 /** @param {import(".").NS } ns */
 export function getServersList(ns) {
     let servers = ["home"];
@@ -89,14 +42,13 @@ export function getNestedServersList(ns, startServer, parent) {
 
     let scannedServers = ns.scan(startServer);
     let nestedServers = {};
-    nestedServers[startServer] = [];
 
     for (let i = 0 ; i < scannedServers.length ; i++) {
         let scannedServer = scannedServers[i];
         if (parent === scannedServer) {
             continue;
         }
-        nestedServers[startServer].push(getNestedServersList(ns, scannedServer, startServer));
+        nestedServers[scannedServer] = getNestedServersList(ns, scannedServer, startServer);
     }
     return nestedServers;
 }
@@ -149,47 +101,60 @@ export function sexyPrintObject(ns, msg, indent = 0) {
         }
     }
 }
+/** @param {import(".").NS } ns
+ * @param {string} programName
+ * @return {boolean}
+ */
+export function isProgramAvailable(ns, programName) {
+    return ns.fileExists(programName, "home");
+}
 
-/** @param {import(".").NS } ns */
-export function getTargetGroupedServerProcesses(ns) {
-    let targetGroupedServerProcesses = {};
-    let rootServers = getRootServersList(ns);
-    for (let i = 0 ; i < rootServers.length ; i++) {
-        let rootServer = rootServers[i];
-        let serverProcesses = ns.ps(rootServer);
-        if (serverProcesses.length) {
-            for (let j = 0 ; j < serverProcesses.length ; j++) {
-                let serverProcess = serverProcesses[j];
-                let fileName = serverProcess.filename;
-                let threads = serverProcess.threads;
-                let args = serverProcess.args;
-                if (args.length === 3) {
-                    let targetServer = args[0];
-                    // let execStart = new Date(args[1]);
-                    let execEnd = new Date(args[2]);
-                    if (!(targetServer in targetGroupedServerProcesses)) {
-                        targetGroupedServerProcesses[targetServer] = {};
-                    }
-                    if (!(fileName in targetGroupedServerProcesses[targetServer])) {
-                        targetGroupedServerProcesses[targetServer][fileName] = {
-                            "threads": 0,
-                            "attackers": [],
-                            "lastAttackFinishesAt": new Date(),
-                        }
-                    }
+export const findPath = (ob, key) => {
+    const path = [];
+    const keyExists = (obj) => {
+        if (!obj || (typeof obj !== "object" && !Array.isArray(obj))) {
+            return false;
+        }
+        else if (obj.hasOwnProperty(key)) {
+            return true;
+        }
+        else if (Array.isArray(obj)) {
+            let parentKey = path.length ? path.pop() : "";
 
-
-                    targetGroupedServerProcesses[targetServer][fileName].threads += threads;
-                    if (!targetGroupedServerProcesses[targetServer][fileName].attackers.includes(rootServer)) {
-                        targetGroupedServerProcesses[targetServer][fileName].attackers.push(rootServer);
-                    }
-                    if (execEnd.getTime() > targetGroupedServerProcesses[targetServer][fileName].lastAttackFinishesAt.getTime()) {
-                        targetGroupedServerProcesses[targetServer][fileName].lastAttackFinishesAt = execEnd;
-                    }
+            for (let i = 0; i < obj.length; i++) {
+                path.push(`${parentKey}[${i}]`);
+                const result = keyExists(obj[i], key);
+                if (result) {
+                    return result;
                 }
+                path.pop();
             }
         }
-    }
+        else {
+            for (const k in obj) {
+                path.push(k);
+                const result = keyExists(obj[k], key);
+                if (result) {
+                    return result;
+                }
+                path.pop();
+            }
+        }
+        return false;
+    };
 
-    return targetGroupedServerProcesses;
+    keyExists(ob);
+
+    return path;
+}
+
+/** @param {import(".").NS } ns
+ * @param {string} targetServerName
+ * @return {string[]}
+ */
+export function getPathToServer(ns, targetServerName) {
+    let path = findPath(getNestedServersList(ns), targetServerName);
+    path.push(targetServerName);
+
+    return path;
 }

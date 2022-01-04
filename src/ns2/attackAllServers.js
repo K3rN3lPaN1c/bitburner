@@ -1,37 +1,52 @@
-import * as commonLib from "commonLib.js";
+import * as CONSTANTS from "lib_constants.js";
+import {getRootServersList} from "lib_rootServerList.js";
+import {getTargetGroupedServerProcesses} from "lib_targetGroupedServerProcesses.js";
+import {getServersList} from "lib_serverList.js";
+
 import ServerDetailsCollection from "ServerDetailsCollection.js";
 import ServerDetails from "ServerDetails.js";
 
 let targetServerDetailsCollection;
 let botServerDetailsCollection;
+let rootServers;
 
 /** @param {import(".").NS } ns */
 export async function main(ns) {
-    commonLib.disableLogs(ns);
-    ns.toast("Starting attacks on all servers", "info");
+    await prepareScripts(ns);
 
+    rootServers = getRootServersList(ns, getServersList(ns));
     targetServerDetailsCollection = new ServerDetailsCollection(ns);
     botServerDetailsCollection = new ServerDetailsCollection(ns);
-    botServerDetailsCollection.add(new ServerDetails(ns, "home"));
+    botServerDetailsCollection.add(new ServerDetails(ns, CONSTANTS.SERVER_HOME));
 
     scanAndGatherTargetAndBotServers(ns, botServerDetailsCollection, targetServerDetailsCollection);
 
-
-
     let serversToHackCollection = new ServerDetailsCollection(ns);
     targetServerDetailsCollection.clone().getServersForHacking(serversToHackCollection);
-    //serversToHackCollection.addByName("iron-gym");
     await hacking(ns, botServerDetailsCollection, serversToHackCollection);
 
     let serversToGrowCollection = new ServerDetailsCollection(ns);
     targetServerDetailsCollection.clone().getServersForGrowing(serversToGrowCollection);
-    // serversToGrowCollection.addByName("iron-gym");
     await growing(ns, botServerDetailsCollection, serversToGrowCollection);
 
     let serversToWeakenCollection = new ServerDetailsCollection(ns);
     targetServerDetailsCollection.clone().getServersForWeakening(serversToWeakenCollection);
-    //serversToWeakenCollection.addByName("iron-gym");
     await weakening(ns, botServerDetailsCollection, serversToWeakenCollection);
+
+    removeScripts(ns);
+}
+
+/** @param {import(".").NS } ns */
+async function prepareScripts(ns) {
+    await ns.write(CONSTANTS.CREATED_SCRIPTS[0], "grow(args[0])", "w");
+    await ns.write(CONSTANTS.CREATED_SCRIPTS[1], "weaken(args[0])", "w");
+    await ns.write(CONSTANTS.CREATED_SCRIPTS[2], "hack(args[0])", "w");
+}
+
+function removeScripts(ns) {
+    ns.rm(CONSTANTS.CREATED_SCRIPTS[0]);
+    ns.rm(CONSTANTS.CREATED_SCRIPTS[1]);
+    ns.rm(CONSTANTS.CREATED_SCRIPTS[2]);
 }
 
 /**
@@ -40,7 +55,7 @@ export async function main(ns) {
  * @param {import("./ServerDetailsCollection.js").ServerDetailsCollection } targetServerDetailsCollection
  * */
 function scanAndGatherTargetAndBotServers(ns, botServerDetailsCollection, targetServerDetailsCollection) {
-    let rootServers = commonLib.getRootServersList(ns);
+    let rootServers = getRootServersList(ns, getServersList(ns));
 
     for (let i = 0 ; i < rootServers.length ; i++) {
         let currentServerName = rootServers[i];
@@ -57,10 +72,8 @@ function scanAndGatherTargetAndBotServers(ns, botServerDetailsCollection, target
  * @param {import("./ServerDetailsCollection.js").ServerDetailsCollection } targetServerDetailsCollection
  */
 async function hacking(ns, botServerDetailsCollection, targetServerDetailsCollection) {
-    ns.print("===============================================")
-    ns.print("Starting: HACKING");
     if (targetServerDetailsCollection.length === 0) {
-        ns.print("No Servers to hack");
+        return;
     }
     while(targetServerDetailsCollection.hasNext()) {
         let targetServer = targetServerDetailsCollection.getNext();
@@ -73,10 +86,11 @@ async function hacking(ns, botServerDetailsCollection, targetServerDetailsCollec
             execTime,
             targetNumOfThreads,
             botServerDetailsCollection,
-            commonLib.CREATED_SCRIPT_HACK,
+            CONSTANTS.CREATED_SCRIPT_HACK,
             "hack"
         );
     }
+
 }
 
 /**
@@ -85,10 +99,8 @@ async function hacking(ns, botServerDetailsCollection, targetServerDetailsCollec
  * @param {import("./ServerDetailsCollection.js").ServerDetailsCollection } targetServerDetailsCollection
  */
 async function growing(ns, botServerDetailsCollection, targetServerDetailsCollection) {
-    ns.print("===============================================")
-    ns.print("Starting: GROWING");
     if (targetServerDetailsCollection.length === 0) {
-        ns.print("No Servers to grow");
+        return;
     }
     while(targetServerDetailsCollection.hasNext()) {
         let targetServer = targetServerDetailsCollection.getNext();
@@ -101,7 +113,7 @@ async function growing(ns, botServerDetailsCollection, targetServerDetailsCollec
             execTime,
             targetNumOfThreads,
             botServerDetailsCollection,
-            commonLib.CREATED_SCRIPT_GROW,
+            CONSTANTS.CREATED_SCRIPT_GROW,
             "grow"
         );
     }
@@ -113,10 +125,8 @@ async function growing(ns, botServerDetailsCollection, targetServerDetailsCollec
  * @param {import("./ServerDetailsCollection.js").ServerDetailsCollection } targetServerDetailsCollection
  */
 async function weakening(ns, botServerDetailsCollection, targetServerDetailsCollection) {
-    ns.print("===============================================")
-    ns.print("Starting: WEAKENING");
     if (targetServerDetailsCollection.length === 0) {
-        ns.print("No Servers to weaken");
+        return;
     }
     while(targetServerDetailsCollection.hasNext()) {
         let targetServer = targetServerDetailsCollection.getNext();
@@ -129,7 +139,7 @@ async function weakening(ns, botServerDetailsCollection, targetServerDetailsColl
             execTime,
             targetNumOfThreads,
             botServerDetailsCollection,
-            commonLib.CREATED_SCRIPT_WEAKEN,
+            CONSTANTS.CREATED_SCRIPT_WEAKEN,
             "weaken"
         );
     }
@@ -145,7 +155,7 @@ async function weakening(ns, botServerDetailsCollection, targetServerDetailsColl
  * @param {string} attackName
  */
 async function attackServer(ns, targetServer, execTime, targetNumOfThreads, botServerDetailsCollection, scriptName, attackName) {
-    let targetGroupedServerProcesses = commonLib.getTargetGroupedServerProcesses(ns);
+    let targetGroupedServerProcesses = getTargetGroupedServerProcesses(ns, rootServers);
 
     if (targetServer.name in targetGroupedServerProcesses && scriptName in targetGroupedServerProcesses[targetServer.name]) {
         targetNumOfThreads -= targetGroupedServerProcesses[targetServer.name][scriptName].threads;

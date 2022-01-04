@@ -20,7 +20,15 @@ const GANG_TRAINING_TASKS = [
     GANG_TASK_TRAIN_HACKING,
 ];
 
-const GANG_BASIC_TRAINING_THRESHOLD = 50;
+const GANG_COMBAT_TRAINING_THRESHOLD = 2500;
+const GANG_HACK_TRAINING_THRESHOLD = 1000;
+const GANG_CHARISMA_TRAINING_THRESHOLD = 10;
+const GANG_BASIC_ASCENSION_THRESHOLD = 1.1;
+const GANG_WANTED_LEVEL_THRESHOLD = 100000;
+const GANG_WANTED_PENALTY_THRESHOLD = 0.95;
+const GANG_EQUIPMENT_COST_SAFETY_MULTIPLIER = 1;
+const GANG_ENABLE_AUTO_EQUIPMENT_PURCHASES = true;
+const GANG_ENABLE_AUTO_ASCENDANCY = false;
 
 const GANG_MEMBER_NAME_TEMPLATE = "PulykaMan %d";
 
@@ -33,14 +41,20 @@ export async function main(ns) {
     ns.toast("Starting gang management", "info");
 
 
-    recruitMembers(ns);
+    // recruitMembers(ns);
     let gangMemberCollection = gatherMembers(ns);
 
-    //AUGMENTS
-    handleBuyingEquipments(ns, gangMemberCollection);
+    if (GANG_ENABLE_AUTO_EQUIPMENT_PURCHASES) {
+        handleBuyingEquipments(ns, gangMemberCollection);
+    }
+    if (GANG_ENABLE_AUTO_ASCENDANCY) {
+        handleAscendancy(ns, gangMemberCollection);
+    }
     handleTrainingLowLevelMembers(ns, gangMemberCollection);
     handleStandardDuyForMembers(ns, gangMemberCollection);
     await handleWantedLevel(ns, gangMemberCollection);
+
+    //todo: IMPLEMENT GANG WAR
 
 }
 
@@ -49,6 +63,7 @@ function recruitMembers(ns) {
     let memberNames = ns.gang.getMemberNames();
     let numOfRecruit = memberNames.length;
 
+    // ns.gang
     while (ns.gang.canRecruitMember()) {
         numOfRecruit++;
         let recruitName = ns.sprintf(GANG_MEMBER_NAME_TEMPLATE, numOfRecruit)
@@ -75,19 +90,45 @@ function gatherMembers(ns) {
  */
 function handleBuyingEquipments(ns, gangMemberCollection){
     let equipments = ns.gang.getEquipmentNames();
+    let eTypes = [];
 
     for (let i = 0 ; i < equipments.length ; i++) {
         let equipmentName = equipments[i];
+        // if (ns.gang.getEquipmentType(equipmentName) === "Rootkit") {
+        //     continue
+        // }
+
         gangMemberCollection.reset();
         while (gangMemberCollection.hasNext()) {
             let gangMember = gangMemberCollection.getNext();
             if (
                 !ns.gang.getMemberInformation(gangMember.name).upgrades.includes(equipmentName)
                 && !ns.gang.getMemberInformation(gangMember.name).augmentations.includes(equipmentName)
-                && ns.gang.getEquipmentCost(equipmentName) <= ns.getServerMoneyAvailable("home")
+                && ns.gang.getEquipmentCost(equipmentName) * GANG_EQUIPMENT_COST_SAFETY_MULTIPLIER <= ns.getServerMoneyAvailable("home")
             ) {
                 ns.gang.purchaseEquipment(gangMember.name, equipmentName)
             }
+        }
+    }
+}
+
+/** @param {import(".").NS } ns
+ * @param {GangMemberCollection} gangMemberCollection
+ */
+function handleAscendancy(ns, gangMemberCollection){
+    gangMemberCollection.reset();
+    while (gangMemberCollection.hasNext()) {
+        let gangMember = gangMemberCollection.getNext();
+        let ascensionResult = ns.gang.getAscensionResult(gangMember.name);
+
+        if (ascensionResult !== undefined  && (
+            ascensionResult.agi > GANG_BASIC_ASCENSION_THRESHOLD
+            || ascensionResult.str > GANG_BASIC_ASCENSION_THRESHOLD
+            || ascensionResult.def > GANG_BASIC_ASCENSION_THRESHOLD
+            || ascensionResult.dex > GANG_BASIC_ASCENSION_THRESHOLD
+            || ascensionResult.hack > GANG_BASIC_ASCENSION_THRESHOLD
+        )) {
+            ns.gang.ascendMember(gangMember.name);
         }
     }
 }
@@ -100,12 +141,16 @@ function handleTrainingLowLevelMembers(ns, gangMemberCollection) {
     while (gangMemberCollection.hasNext()) {
         let gangMember = gangMemberCollection.getNext();
         if (
-            gangMember.str < GANG_BASIC_TRAINING_THRESHOLD
-            || gangMember.def < GANG_BASIC_TRAINING_THRESHOLD
-            || gangMember.dex < GANG_BASIC_TRAINING_THRESHOLD
-            || gangMember.agi < GANG_BASIC_TRAINING_THRESHOLD
+            gangMember.str < GANG_COMBAT_TRAINING_THRESHOLD
+            || gangMember.def < GANG_COMBAT_TRAINING_THRESHOLD
+            || gangMember.dex < GANG_COMBAT_TRAINING_THRESHOLD
+            || gangMember.agi < GANG_COMBAT_TRAINING_THRESHOLD
         ) {
-            gangMember.setTaskIfNotAlreadyReviewed(GANG_TASK_TRAIN_COMBAT);
+            gangMember.setTask(GANG_TASK_TRAIN_COMBAT);
+        } else if (gangMember.hack < GANG_HACK_TRAINING_THRESHOLD) {
+            gangMember.setTask(GANG_TASK_TRAIN_HACKING);
+        } else if (gangMember.cha < GANG_CHARISMA_TRAINING_THRESHOLD) {
+            gangMember.setTask(GANG_TASK_TRAIN_CHARISMA);
         }
     }
 }
@@ -115,10 +160,44 @@ function handleTrainingLowLevelMembers(ns, gangMemberCollection) {
  */
 function handleStandardDuyForMembers(ns, gangMemberCollection) {
     gangMemberCollection.reset();
+    let respect = ns.gang.getGangInformation().respect;
+
+
+    let i = 0;
     while (gangMemberCollection.hasNext()) {
         let gangMember = gangMemberCollection.getNext();
+
+        // if (i === 0) {
+        //     gangMember.setTask(GANG_TASK_VIGILANTE_JUSTICE);
+        //     i++;
+        //     continue;
+        // }
+
+        if (respect < 2000000) {
+            gangMember.setTaskIfNotAlreadyReviewed(GANG_TASK_TERRORISM);
+        } else {
+            gangMember.setTaskIfNotAlreadyReviewed(GANG_TASK_TERRITORY_WARFARE);
+        }
+
+        // if (i % 4 === 0) {
+        //     gangMember.setTaskIfNotAlreadyReviewed(GANG_TASK_MUG_PEOPLE);
+        // } else if (i % 2 === 0) {
+        //     gangMember.setTaskIfNotAlreadyReviewed(GANG_TASK_STRONGARM_CIVILIANS);
+        // } else {
+        //     gangMember.setTaskIfNotAlreadyReviewed(GANG_TASK_TERRITORY_WARFARE);
+        // }
+
+        // gangMember.setTaskIfNotAlreadyReviewed(GANG_TASK_STRONGARM_CIVILIANS);
         // gangMember.setTaskIfNotAlreadyReviewed(GANG_TASK_MUG_PEOPLE);
-        gangMember.setTaskIfNotAlreadyReviewed(GANG_TASK_STRONGARM_CIVILIANS);
+        // gangMember.setTaskIfNotAlreadyReviewed(GANG_TASK_TERRITORY_WARFARE);
+
+        // if (i < 1) {
+        //     gangMember.setTaskIfNotAlreadyReviewed(GANG_TASK_MUG_PEOPLE);
+        // } else {
+        //     gangMember.setTaskIfNotAlreadyReviewed(GANG_TASK_TERRITORY_WARFARE);
+        // }
+
+        i++;
     }
 }
 
@@ -129,8 +208,7 @@ function handleStandardDuyForMembers(ns, gangMemberCollection) {
 async function handleWantedLevel(ns, gangMemberCollection) {
     gangMemberCollection.reset();
 
-    while (ns.gang.getGangInformation().wantedLevel > 2 && gangMemberCollection.hasNext()) {
-        await ns.asleep(1);
+    while (ns.gang.getGangInformation().wantedPenalty < GANG_WANTED_PENALTY_THRESHOLD && gangMemberCollection.hasNext()) {
         let gangMember = gangMemberCollection.getNext();
 
         if (gangMember.isTraining()) {
@@ -282,6 +360,14 @@ class GangMember {
 
     get agi() {
         return this.#ns.gang.getMemberInformation(this.name).agi;
+    }
+
+    get hack() {
+        return this.#ns.gang.getMemberInformation(this.name).hack;
+    }
+
+    get cha() {
+        return this.#ns.gang.getMemberInformation(this.name).cha;
     }
 
     isTraining() {

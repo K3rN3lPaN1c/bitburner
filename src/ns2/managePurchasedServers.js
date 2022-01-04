@@ -1,13 +1,13 @@
 const defaultRamOfServers = 8;
 const multiplierOfRamOfServers = 4;
-const purchaseSafetyMarginMultiplier = 4;
-const maxRamOfServers = 131072;
+const purchaseSafetyMarginMultiplier = 1;
+const maxRamOfServers = 8192;
 
 const serverNamePrefix = "kuvee-server";
 
 /** @param {import(".").NS } ns */
 export async function main(ns) {
-    ns.toast("Starting purchased server management", "info");
+    // ns.toast("Starting purchased server management", "info");
     let currentRamOfServers = getHighestRamOfActiveServers(ns);
 
     let highestBuyableRamOfServers = getHighestBuyableRamOfServers(ns, currentRamOfServers);
@@ -82,7 +82,6 @@ function canBuyAllServersWithRam(ns, ramOfServer) {
     if (ramOfServer > ns.getPurchasedServerMaxRam()) {
         return false;
     }
-
     let costOfAllServersWithRam
         = ns.getPurchasedServerLimit() * ns.getPurchasedServerCost(ramOfServer) * purchaseSafetyMarginMultiplier;
     return ns.getServerMoneyAvailable("home") > costOfAllServersWithRam

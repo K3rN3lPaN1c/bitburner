@@ -1,58 +1,29 @@
-const server_home = "home";
-
-const program_bruteSSH = "BruteSSH.exe";
-const program_FTPCrack = "FTPCrack.exe";
-const program_relaySMTP = "relaySMTP.exe";
-const program_HTTPWorm = "HTTPWorm.exe";
-const program_SQLInject = "SQLInject.exe";
-
-const program_names = [
-    program_bruteSSH,
-    program_FTPCrack,
-    program_relaySMTP,
-    program_HTTPWorm,
-    program_SQLInject
-];
+import * as CONSTANTS from "lib_constants.js";
 
 let alreadyCompletedScanAroundServers;
 let canHackThisManyPorts;
 
-/** @param {NS} ns **/
+/** @param {import(".").NS } ns */
 export async function main(ns) {
-    ns.toast("Starting network discovery", "info");
-    resetConfigVariables(ns);
-    disableLogForFunctionsUsed(ns);
-    networkDiscoveryAndGainingRootAccessAroundServer(ns, server_home);
-}
-
-/** @param {NS} ns **/
-function disableLogForFunctionsUsed(ns) {
-    ns.disableLog("disableLog");
-    ns.disableLog("scan");
-    ns.disableLog("getHackingLevel");
-    ns.disableLog("getServerRequiredHackingLevel");
-    ns.disableLog("getServerNumPortsRequired");
-}
-
-/** @param {NS} ns **/
-function resetConfigVariables(ns) {
     alreadyCompletedScanAroundServers = [];
-    
     calculateNumberOfOpenablePorts(ns);
+    networkDiscoveryAndGainingRootAccessAroundServer(ns, CONSTANTS.SERVER_HOME);
 }
 
-/** @param {NS} ns **/
+/** @param {import(".").NS } ns */
 function calculateNumberOfOpenablePorts(ns) {
     canHackThisManyPorts = 0;
-    program_names.forEach(function(program_name){
-        if (ns.fileExists(program_name)) {
+    for (let i = 0 ; i < CONSTANTS.PROGRAM_NAMES.length ; i++) {
+        let programName = CONSTANTS.PROGRAM_NAMES[i];
+        if (ns.fileExists(programName)) {
             canHackThisManyPorts++;
         }
-    });
+    }
+
 }
 
 /**
- * @param {NS} ns *
+ * @param {import(".").NS } ns
  * @param {string} targetServer
  */
 function networkDiscoveryAndGainingRootAccessAroundServer(ns, targetServer) {
@@ -71,7 +42,7 @@ function networkDiscoveryAndGainingRootAccessAroundServer(ns, targetServer) {
 }
 
 /**
- * @param {NS} ns *
+ * @param {import(".").NS } ns
  * @param {string} scannedServer
  */
 function handleScannedServer(ns, scannedServer) {
@@ -81,39 +52,38 @@ function handleScannedServer(ns, scannedServer) {
     }
 
     gainRootAccessOnServer(ns, scannedServer);
-    ns.tprintf("*** GAINED ROOT ACCESS TO A NEW SERVER: %s ***", scannedServer);
     ns.toast(ns.sprintf("*** GAINED ROOT ACCESS TO A NEW SERVER: %s ***", scannedServer));
 }
 
 /**
- * @param {NS} ns *
+ * @param {import(".").NS } ns
  * @param {string} serverName
  */
 function isServerReadyToBeBrokenOpen(ns, serverName) {
-    return !(serverName === server_home
+    return !(serverName === CONSTANTS.SERVER_HOME
         || ns.hasRootAccess(serverName)
         || ns.getServerRequiredHackingLevel(serverName) > ns.getHackingLevel()
         || ns.getServerNumPortsRequired(serverName) > canHackThisManyPorts);
 }
 
 /**
- * @param {NS} ns *
+ * @param {import(".").NS } ns
  * @param {string} serverName
  */
 function gainRootAccessOnServer(ns, serverName) {
-    if (ns.fileExists("BruteSSH.exe", "home")) {
+    if (ns.fileExists(CONSTANTS.PROGRAM_BRUTESSH, CONSTANTS.SERVER_HOME)) {
         ns.brutessh(serverName);
     }
-    if (ns.fileExists("FTPCrack.exe", "home")) {
+    if (ns.fileExists(CONSTANTS.PROGRAM_FTPCRACK, CONSTANTS.SERVER_HOME)) {
         ns.ftpcrack(serverName);
     }
-    if (ns.fileExists("relaySMTP.exe", "home")) {
+    if (ns.fileExists(CONSTANTS.PROGRAM_RELAYSMTP, CONSTANTS.SERVER_HOME)) {
         ns.relaysmtp(serverName);
     }
-    if (ns.fileExists("HTTPWorm.exe", "home")) {
+    if (ns.fileExists(CONSTANTS.PROGRAM_HTTPWORM, CONSTANTS.SERVER_HOME)) {
         ns.httpworm(serverName);
     }
-    if (ns.fileExists("SQLInject.exe", "home")) {
+    if (ns.fileExists(CONSTANTS.PROGRAM_SQLINJECT, CONSTANTS.SERVER_HOME)) {
         ns.sqlinject(serverName);
     }
 
