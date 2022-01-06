@@ -33,27 +33,27 @@ export async function main(ns) {
         //todo: check taking algo course
         ns.universityCourse(CONSTANTS.LOCATION_ROTHMAN_UNIVERSITY, CONSTANTS.COURSE_ALGORITHMS);
     } else if (p.strength < targetStrLevel) {
-        travelIfNeeded(ns, CONSTANTS.CITY_SECTOR_12);
         ns.toast("Training str until: " + targetStrLevel, "info");
         if (ns.getPlayer().workType !== "Studying or Taking a class at university" || ns.getPlayer().className !== "training your strength at a gym") {
+            travelIfNeeded(ns, CONSTANTS.CITY_SECTOR_12);
             ns.gymWorkout(CONSTANTS.LOCATION_POWERHOUSE_GYM, CONSTANTS.WORKOUT_STRENGTH);
         }
     } else if (p.defense < targetDefLevel || p.defense < CONSTANTS.SINGULARITY_TRAINING_HARD_THRESHOLD) {
-        travelIfNeeded(ns, CONSTANTS.CITY_SECTOR_12);
         ns.toast("Training def until: " + targetDefLevel, "info");
         if (ns.getPlayer().workType !== "Studying or Taking a class at university" || ns.getPlayer().className !== "training your defense at a gym") {
+            travelIfNeeded(ns, CONSTANTS.CITY_SECTOR_12);
             ns.gymWorkout(CONSTANTS.LOCATION_POWERHOUSE_GYM, CONSTANTS.WORKOUT_DEFENSE);
         }
     } else if (p.dexterity < targetDexLevel || p.dexterity < CONSTANTS.SINGULARITY_TRAINING_HARD_THRESHOLD) {
-        travelIfNeeded(ns, CONSTANTS.CITY_SECTOR_12);
         ns.toast("Training dex until: " + targetDexLevel, "info");
         if (ns.getPlayer().workType !== "Studying or Taking a class at university" || ns.getPlayer().className !== "training your dexterity at a gym") {
+            travelIfNeeded(ns, CONSTANTS.CITY_SECTOR_12);
             ns.gymWorkout(CONSTANTS.LOCATION_POWERHOUSE_GYM, CONSTANTS.WORKOUT_DEXTERITY);
         }
     } else if (p.agility < targetAgiLevel || p.agility < CONSTANTS.SINGULARITY_TRAINING_HARD_THRESHOLD) {
-        travelIfNeeded(ns, CONSTANTS.CITY_SECTOR_12);
         ns.toast("Training agi until: " + targetAgiLevel, "info");
         if (ns.getPlayer().workType !== "Studying or Taking a class at university" || ns.getPlayer().className !== "training your agility at a gym") {
+            travelIfNeeded(ns, CONSTANTS.CITY_SECTOR_12);
             ns.gymWorkout(CONSTANTS.LOCATION_POWERHOUSE_GYM, CONSTANTS.WORKOUT_AGILITY);
         }
     } else if (p.charisma < targetChaLevel) {

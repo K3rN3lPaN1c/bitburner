@@ -3,6 +3,7 @@ const SERVER_HOME = "home";
 /** @param {import("./index").NS } ns
  * @param {string} scriptName
  * @param {string} targetServer
+ * @param args
  */
 export async function syncRun(ns, scriptName, targetServer= SERVER_HOME, args) {
     let scriptRam = ns.getScriptRam(scriptName, targetServer);
@@ -20,13 +21,13 @@ export async function syncRun(ns, scriptName, targetServer= SERVER_HOME, args) {
     }
 
     if (pid > 0) {
-        ns.toast(ns.sprintf(
-            "Started script '%s' using %d / %d GB RAM. PID = %d",
-            scriptName,
-            scriptRam,
-            serverAvailableRam,
-            pid
-        ));
+        // ns.toast(ns.sprintf(
+        //     "Started script '%s' using %d / %d GB RAM. PID = %d",
+        //     scriptName,
+        //     scriptRam,
+        //     serverAvailableRam,
+        //     pid
+        // ));
     } else {
         ns.toast(ns.sprintf(
             "Error starting script '%s'",

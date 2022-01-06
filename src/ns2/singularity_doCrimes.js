@@ -6,7 +6,6 @@ export async function main(ns) {
     if ([...CONSTANTS.SINGULARITY_WORK_TYPES_NOT_TO_INTERRUPT, CONSTANTS.WORK_TYPE_LEARNING_WORKOUT, WORK_TYPE_WORKING_FOR_FACTION].includes(ns.getPlayer().workType)) {
         return;
     }
-    ns.toast(ns.getPlayer().workType);
 
     let crimes = CONSTANTS.CRIMES_PREFERRED_ORDER;
 

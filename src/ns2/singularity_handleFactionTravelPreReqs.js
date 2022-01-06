@@ -4,6 +4,10 @@ import {travelIfNeeded} from "./lib_singularity_travelIfNeeded";
 
 /** @param {import(".").NS } ns */
 export async function main(ns) {
+    if (CONSTANTS.WORK_TYPE_LEARNING_WORKOUT === ns.getPlayer().workType) {
+        return;
+    }
+
     let playerFactions = ns.getPlayer().factions;
     for (let i = 0 ; i < CONSTANTS.FACTIONS_PREFERRED_ORDER.length ; i++) {
         let factionName = CONSTANTS.FACTIONS_PREFERRED_ORDER[i];

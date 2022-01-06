@@ -11,6 +11,6 @@ export async function main(ns) {
             ns.exec(SCRIPT_ATTACK_ALL_SERVERS, SERVER_HOME);
         }
 
-        await ns.asleep(10);
+        await ns.asleep(100);
     }
 }
