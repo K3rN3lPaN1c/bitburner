@@ -2,7 +2,6 @@ import * as CONSTANTS from "lib_constants.js";
 import {getHighestAugmentRepReqForFaction} from "./lib_singularity_highestAugmentRepReqForFaction";
 import {getUnboughtAugmentsFromFaction} from "./lib_singularity_unboughtAugmentsFromFaction";
 import {getUnboughtEnoughRepAugmentsFromFaction} from "./lib_singularity_unboughtEnoughRepAugmentsFromFaction";
-import {SERVER_HOME} from "lib_constants.js";
 
 /** @param {import(".").NS } ns */
 export async function main(ns) {
@@ -15,6 +14,7 @@ export async function main(ns) {
     let favorToDonate = ns.getFavorToDonate();
     let playerFactions = ns.getPlayer().factions;
     let highestAugmentRepReq = getHighestAugmentRepReqForFaction(ns, factionName, unboughtAugmentsFromFaction);
+    let playerMoney = ns.getPlayer().money;
 
     if (!playerFactions.includes(factionName)) {
         return;
@@ -42,7 +42,7 @@ export async function main(ns) {
 
 
 
-            if (ns.getPlayer().money < getEnoughRepHighestAugmentPriceForFaction(ns, factionName, unboughtAugmentsFromFaction)) {
+            if (playerMoney < getEnoughRepHighestAugmentPriceForFaction(ns, factionName, unboughtAugmentsFromFaction)) {
                 return;
             }
 
@@ -77,7 +77,9 @@ export async function main(ns) {
 
         let numberOfNf = buyMaxNumberOfNf(ns, factionName);
 
-        ns.kill(CONSTANTS.SCRIPT_INFINITE_ATTACK, SERVER_HOME);
+        handleAnyFactionDonateBuyNf(ns, playerFactions, favorToDonate, playerMoney);
+
+        ns.kill(CONSTANTS.SCRIPT_INFINITE_ATTACK, CONSTANTS.SERVER_HOME);
         ns.stopAction();
         await ns.asleep(10);
 
@@ -85,11 +87,50 @@ export async function main(ns) {
             ns.getOwnedAugmentations(true).length > ns.getOwnedAugmentations(false).length
             || numberOfNf > 0
         ) {
-            // ns.installAugmentations("init.js");
             ns.installAugmentations();
         } else {
-            // ns.softReset("init.js");
             ns.softReset();
+        }
+    }
+}
+
+function handleAnyFactionDonateBuyNf(ns, playerFactions, favorToDonate, playerMoney) {
+    let factionRepMult = ns.getPlayer().faction_rep_mult;
+    let targetFaction;
+    let targetFactionRep = 0;
+
+    for (let i = 0 ; i < playerFactions.length ; i++) {
+        let faction = playerFactions[i];
+
+        let factionFavor = ns.getFactionFavor(faction);
+        if (factionFavor < favorToDonate) {
+            continue;
+        }
+
+        let factionRep = ns.getFactionRep(faction);
+        if (factionRep > targetFactionRep) {
+            targetFaction = faction;
+            targetFactionRep = factionRep;
+        }
+    }
+
+    ns.toast(targetFaction);
+    if (!targetFaction) {
+        return;
+    }
+
+    while (true) {
+        let missingRep = ns.getAugmentationRepReq(CONSTANTS.AUGMENTATION_NEUROFLUX_GOVERNOR) - targetFactionRep;
+        let nfPrice = ns.getAugmentationPrice(CONSTANTS.AUGMENTATION_NEUROFLUX_GOVERNOR);
+        let moneyToDonate = missingRep / factionRepMult * 1e6;
+        let compositePrice = moneyToDonate + nfPrice;
+        if (playerMoney >= compositePrice) {
+            playerMoney -= compositePrice;
+            ns.donateToFaction(targetFaction, moneyToDonate);
+            ns.purchaseAugmentation(targetFaction, CONSTANTS.AUGMENTATION_NEUROFLUX_GOVERNOR);
+            ns.toast("Buy a level of NF from " + targetFaction + " for " + compositePrice);
+        } else {
+            break;
         }
     }
 }
