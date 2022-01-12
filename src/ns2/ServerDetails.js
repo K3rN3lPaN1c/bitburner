@@ -1,3 +1,5 @@
+const RESERVED_HOME_RAM = 50;
+
 export default class ServerDetails {
     /** @param {import(".").NS } #ns */
     #ns;
@@ -45,7 +47,7 @@ export default class ServerDetails {
     get availableRam() {
         let availableRam = this.maxRam-this.usedRam;
         if (this.name === "home") {
-            availableRam -= 150;
+            availableRam -= RESERVED_HOME_RAM;
         }
         return Math.max(availableRam, 0);
     }

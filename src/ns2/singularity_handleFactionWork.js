@@ -1,4 +1,6 @@
 import * as CONSTANTS from "lib_constants.js";
+import {getHighestAugmentRepReqForFaction} from "./lib_singularity_highestAugmentRepReqForFaction";
+import {getUnboughtAugmentsFromFaction} from "./lib_singularity_unboughtAugmentsFromFaction";
 
 /** @param {import(".").NS } ns */
 export async function main(ns) {
@@ -10,6 +12,14 @@ export async function main(ns) {
     let playerFactions = ns.getPlayer().factions;
 
     if (!playerFactions.includes(factionName)) {
+        return;
+    }
+
+
+    if (ns.getFactionRep(factionName) > getHighestAugmentRepReqForFaction(ns, factionName, getUnboughtAugmentsFromFaction(ns, factionName))) {
+        if (ns.getPlayer().workType === CONSTANTS.WORK_TYPE_WORKING_FOR_FACTION) {
+            ns.stopAction();
+        }
         return;
     }
 

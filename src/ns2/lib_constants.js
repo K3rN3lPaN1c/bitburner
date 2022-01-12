@@ -10,6 +10,8 @@ export const CREATED_SCRIPT_HACK = "hack.script";
 
 export const SCRIPT_DISPATCHER = "dispatcher.js";
 
+export const SCRIPT_SET_NEXT_TARGET_FACTION = "setNextTargetFaction.js";
+
 export const SCRIPT_INFINITE_ATTACK = "infiniteAttack.js";
 
 export const SCRIPT_NETWORK_DISCOVERY = "networkDiscoveryAndGainingRootAccess.js";
@@ -17,8 +19,6 @@ export const SCRIPT_ATTACK_ALL_SERVERS = "attackAllServers.js";
 export const SCRIPT_MANAGE_PURCHASED_SERVERS = "managePurchasedServers.js";
 export const SCRIPT_GANG_MANAGEMENT = "gangManagement.js"; //TODO: Refactor
 export const SCRIPT_HACKNET_NODE_MANAGEMENT = "hacknetNodeManagement.js";  //TODO: Refactor
-
-export const SCRIPT_SINGULARITY_DISPATCHER = "singularityDispatcher.js";
 
 export const SCRIPT_SINGULARITY_PHYSICAL_MANAGEMENT = "singularity_handlePhysicalPurchases.js";
 export const SCRIPT_SINGULARITY_ESCAPE_THE_BITNODE = "singularity_escapeTheBitnode.js";
@@ -33,7 +33,7 @@ export const SCRIPT_SINGULARITY_HANDLE_AUGMENT_INSTALLATIONS = "singularity_hand
 export const SCRIPT_SINGULARITY_HANDLE_FACTION_WORK = "singularity_handleFactionWork.js";
 export const SCRIPT_SINGULARITY_DO_CRIMES = "singularity_doCrimes.js";
 
-export const SCRIPT_SINGULARITY_MANAGEMENT = "singularityManagement.js";
+export const SCRIPT_UTIL_SHOW_SERVER_MAP = "showServerMap.js";
 
 export const CREATED_SCRIPTS = [
     CREATED_SCRIPT_GROW,
@@ -41,12 +41,10 @@ export const CREATED_SCRIPTS = [
     CREATED_SCRIPT_HACK,
 ]
 
-export const SCRIPTS_LIBS = [
-    "commonLib.js",
+export const SCRIPTS = [
     "init.js",
     "ServerDetails.js",
     "ServerDetailsCollection.js",
-    "showServerMap.js",
 
     "lib_constants.js",
 
@@ -63,22 +61,17 @@ export const SCRIPTS_LIBS = [
     "lib_singularity_travelIfNeeded.js",
     "lib_singularity_unboughtAugmentsFromFaction.js",
     "lib_singularity_unboughtEnoughRepAugmentsFromFaction.js",
-];
-
-export const SCRIPTS_CONTROLLERS = [
-    SCRIPT_INFINITE_ATTACK,
 
     SCRIPT_DISPATCHER,
+    SCRIPT_SET_NEXT_TARGET_FACTION,
+
+    SCRIPT_INFINITE_ATTACK,
     SCRIPT_NETWORK_DISCOVERY,
     SCRIPT_ATTACK_ALL_SERVERS,
     SCRIPT_MANAGE_PURCHASED_SERVERS,
+    SCRIPT_GANG_MANAGEMENT,
+    SCRIPT_HACKNET_NODE_MANAGEMENT,
 
-    SCRIPT_SINGULARITY_DISPATCHER,
-    // SCRIPT_GANG_MANAGEMENT,
-    // SCRIPT_HACKNET_NODE_MANAGEMENT,
-];
-
-export const SCRIPTS_SINGULARITY_CONTROLLERS = [
     SCRIPT_SINGULARITY_PHYSICAL_MANAGEMENT,
     SCRIPT_SINGULARITY_AUTO_JOIN_FACTIONS,
     SCRIPT_SINGULARITY_ESCAPE_THE_BITNODE,
@@ -91,18 +84,7 @@ export const SCRIPTS_SINGULARITY_CONTROLLERS = [
     SCRIPT_SINGULARITY_HANDLE_AUGMENT_INSTALLATIONS,
     SCRIPT_SINGULARITY_HANDLE_FACTION_WORK,
     SCRIPT_SINGULARITY_DO_CRIMES,
-
-    // SCRIPT_SINGULARITY_MANAGEMENT,
 ];
-
-export const SCRIPTS_TO_RUN = {
-    [SCRIPT_DISPATCHER]: [
-        SCRIPT_NETWORK_DISCOVERY,
-        SCRIPT_MANAGE_PURCHASED_SERVERS,
-        // SCRIPT_GANG_MANAGEMENT,
-        // SCRIPT_HACKNET_NODE_MANAGEMENT,
-    ],
-};
 
 //-----------
 //- SERVERS -
@@ -359,6 +341,31 @@ export const FACTIONS_EXCLUSIONS = {
     ],
 };
 
+export const FACTIONS_REP_THRESHOLDS = {
+    // [FACTION_CYBERSEC]: [3000, 11250],
+    [FACTION_CYBERSEC]: [2000, 10000],
+    [FACTION_TIAN_DI_HUI]: [10000, 75000],
+    [FACTION_NITESEC]: [10000, 20000, 50000],
+    [FACTION_SECTOR_12]: [12500, 50000],
+    [FACTION_CHONGQING]: [10000, 25000, 50000, 100000], //TODO: CHECK
+    [FACTION_NEW_TOKYO]: [10000, 25000, 50000, 100000], //TODO: CHECK
+    [FACTION_ISHIMA]: [10000, 25000, 50000, 100000], //TODO: CHECK
+    [FACTION_THE_BLACK_HAND]: [50000, 112500, 50000],
+    [FACTION_BITRUNNERS]: [100000, 200000],
+    [FACTION_VOLHAVEN]: [10000, 25000, 50000, 100000], //TODO: CHECK
+
+    [FACTION_DAEDALUS]: [10000, 25000, 50000, 100000], //TODO: CHECK
+    [FACTION_SLUM_SNAKES]: [10000, 25000, 50000, 100000], //TODO: CHECK
+    [FACTION_TETRADS]: [10000, 25000, 50000, 100000], //TODO: CHECK
+    [FACTION_THE_SYNDICATE]: [10000, 25000, 50000, 100000], //TODO: CHECK
+    [FACTION_AEVUM]: [10000, 25000, 50000, 100000], //TODO: CHECK
+    [FACTION_SPEAKERS_FOR_THE_DEAD]: [10000, 25000, 50000, 100000], //TODO: CHECK
+    [FACTION_THE_DARK_ARMY]: [10000, 25000, 50000, 100000], //TODO: CHECK
+
+    [FACTION_THE_COVENANT]: [10000, 25000, 50000, 100000], //TODO: CHECK
+    [FACTION_ILLUMINATI]: [10000, 25000, 50000, 100000], //TODO: CHECK
+};
+
 //-------------
 //- LOCATIONS -
 //-------------
@@ -420,37 +427,9 @@ export const CRIMES = [
 
 export const CRIMES_PREFERRED_ORDER = [
     CRIME_HOMICIDE,
-    CRIME_LARCENY,
     CRIME_MUG_SOMEONE,
-    CRIME_ROB_STORE,
     CRIME_SHOPLIFT,
 ];
-//---------------
-//- SINGULARITY -
-//---------------
-
-export const SINGULARITY_TRAINING_BASE_STAT = 5;
-export const SINGULARITY_TRAINING_HARD_THRESHOLD = 50;
-export const SINGULARITY_FACTION_FAVOR_GAIN_THRESHOLD = 50;
-export const SINGULARITY_FACTION_DONATE_MONEY_SAFETY_MARGIN = 3;
-export const SINGULARITY_BUY_PROGRAMS = true;
-
-export const SINGULARITY_WORK_TYPES_NOT_TO_INTERRUPT = [
-    WORK_TYPE_CREATE_A_PROGRAM,
-    WORK_TYPE_COMMITTING_A_CRIME
-];
-
-export const SINGULARITY_PROGRAMS_REQUIREMENTS = {
-    "AutoLink.exe": "25",
-    "BruteSSH.exe": "50",
-    "ServerProfiler.exe": "75",
-    "DeepscanV1.exe": "75",
-    "FTPCrack.exe": "100",
-    "relaySMTP.exe": "250",
-    "DeepscanV2.exe": "400",
-    "HTTPWorm.exe": "500",
-    "SQLInject.exe": "750",
-};
 
 //------------
 //- AUGMENTS -
@@ -462,4 +441,32 @@ export const AUGMENTATION_NEUROFLUX_GOVERNOR = "NeuroFlux Governor";
 //- FLAGS -
 //---------
 
-export const FLAG_KEEP_DISPATCHER_RUNNING = true;
+export const FALG_KEEP_SINGULARITY_FUNCTIONS_RUNNING = true;
+export const FALG_KEEP_SINGULARITY_WORK_FUNCTIONS_RUNNING = false;
+
+//---------------
+//- SINGULARITY -
+//---------------
+
+export const SINGULARITY_TRAINING_BASE_STAT = 5;
+export const SINGULARITY_TRAINING_HARD_THRESHOLD = 50;
+export const SINGULARITY_FACTION_FAVOR_GAIN_THRESHOLD = 75;
+export const SINGULARITY_FACTION_DONATE_MONEY_SAFETY_MARGIN = 3;
+export const SINGULARITY_BUY_PROGRAMS = true;
+
+export const SINGULARITY_WORK_TYPES_NOT_TO_INTERRUPT = [
+    WORK_TYPE_CREATE_A_PROGRAM,
+    WORK_TYPE_COMMITTING_A_CRIME
+];
+
+export const SINGULARITY_PROGRAMS_REQUIREMENTS = {
+    "BruteSSH.exe": "50",
+    "FTPCrack.exe": "100",
+    "relaySMTP.exe": "250",
+    "HTTPWorm.exe": "500",
+    "SQLInject.exe": "750",
+    // "AutoLink.exe": "25",
+    // "ServerProfiler.exe": "75",
+    // "DeepscanV1.exe": "75",
+    // "DeepscanV2.exe": "400",
+};

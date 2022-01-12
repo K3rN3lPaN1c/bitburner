@@ -14,7 +14,7 @@ export async function main(ns) {
         let crimeChance = ns.getCrimeChance(crime);
         let cycleTime = 10000;
 
-        if (crimeChance === 1 || i === crimes.length-1) {
+        if (crimeChance >= 0.95 || i === crimes.length-1) {
             let crimeTime = ns.getCrimeStats(crime).time;
 
             if (crimeTime > cycleTime) {

@@ -4,11 +4,11 @@ export async function main(ns) {
         ns.toast("TOR Router has been purchased!")
     }
 
-    if (ns.upgradeHomeRam()) {
+    while (ns.upgradeHomeRam()) {
         ns.toast("Home RAM has been upgraded!")
     }
 
-    if (ns.upgradeHomeCores()) {
+    while (ns.upgradeHomeCores()) {
         ns.toast("Home Cores have been upgraded!")
     }
 }

@@ -1,6 +1,6 @@
-import * as commonLib from "commonLib.js";
+import {getNestedServersList} from "./lib_nestedServerList";
 
-/** @param {import(".").NS } ns */
+/** @param {import("./index").NS } ns */
 export async function main(ns) {
-    commonLib.sexyPrintObject(ns, commonLib.getNestedServersList(ns));
+    ns.tprint(JSON.stringify(getNestedServersList(ns), null, 2));
 }

@@ -5,29 +5,15 @@ import {getUnboughtEnoughRepAugmentsFromFaction} from "./lib_singularity_unbough
 
 /** @param {import(".").NS } ns */
 export async function main(ns) {
-
     let factionName = ns.args[0];
     let unboughtAugmentsFromFaction = getUnboughtAugmentsFromFaction(ns, factionName);
-    let factionRep = ns.getFactionRep(factionName);
-    let factionFavor = ns.getFactionFavor(factionName);
-    let factionFavorGain = ns.getFactionFavorGain(factionName);
     let favorToDonate = ns.getFavorToDonate();
     let playerFactions = ns.getPlayer().factions;
-    let highestAugmentRepReq = getHighestAugmentRepReqForFaction(ns, factionName, unboughtAugmentsFromFaction);
-    let playerMoney = ns.getPlayer().money;
-
     if (!playerFactions.includes(factionName)) {
         return;
     }
 
-    if (
-        highestAugmentRepReq <= factionRep
-        || factionFavorGain >= CONSTANTS.SINGULARITY_FACTION_FAVOR_GAIN_THRESHOLD
-        || (
-            factionFavor < favorToDonate
-            && factionFavorGain + factionFavor >= favorToDonate
-        )
-    ) {
+    if (isReadyToInstall(ns, factionName, unboughtAugmentsFromFaction, favorToDonate)) {
         while (true) {
             await ns.asleep(1);
             let unboughtAugmentsFromFaction = getUnboughtEnoughRepAugmentsFromFaction(
@@ -42,7 +28,7 @@ export async function main(ns) {
 
 
 
-            if (playerMoney < getEnoughRepHighestAugmentPriceForFaction(ns, factionName, unboughtAugmentsFromFaction)) {
+            if (ns.getPlayer().money < getEnoughRepHighestAugmentPriceForFaction(ns, factionName, unboughtAugmentsFromFaction)) {
                 return;
             }
 
@@ -77,9 +63,11 @@ export async function main(ns) {
 
         let numberOfNf = buyMaxNumberOfNf(ns, factionName);
 
-        handleAnyFactionDonateBuyNf(ns, playerFactions, favorToDonate, playerMoney);
+        handleAnyFactionDonateBuyNf(ns, playerFactions, favorToDonate, ns.getPlayer().money);
 
+        await ns.asleep(10);
         ns.kill(CONSTANTS.SCRIPT_INFINITE_ATTACK, CONSTANTS.SERVER_HOME);
+        await ns.asleep(10);
         ns.stopAction();
         await ns.asleep(10);
 
@@ -114,22 +102,29 @@ function handleAnyFactionDonateBuyNf(ns, playerFactions, favorToDonate, playerMo
         }
     }
 
-    ns.toast(targetFaction);
+    ns.toast(
+        ns.sprintf(
+            "Targeting %s for faction donations." , targetFaction
+        )
+    );
     if (!targetFaction) {
         return;
     }
 
     while (true) {
-        let missingRep = ns.getAugmentationRepReq(CONSTANTS.AUGMENTATION_NEUROFLUX_GOVERNOR) - targetFactionRep;
+        let missingRep = Math.max(0, ns.getAugmentationRepReq(CONSTANTS.AUGMENTATION_NEUROFLUX_GOVERNOR) - targetFactionRep);
         let nfPrice = ns.getAugmentationPrice(CONSTANTS.AUGMENTATION_NEUROFLUX_GOVERNOR);
         let moneyToDonate = missingRep / factionRepMult * 1e6;
         let compositePrice = moneyToDonate + nfPrice;
         if (playerMoney >= compositePrice) {
             playerMoney -= compositePrice;
-            ns.donateToFaction(targetFaction, moneyToDonate);
+            if (moneyToDonate > 0) {
+                ns.donateToFaction(targetFaction, moneyToDonate);
+            }
             ns.purchaseAugmentation(targetFaction, CONSTANTS.AUGMENTATION_NEUROFLUX_GOVERNOR);
             ns.toast("Buy a level of NF from " + targetFaction + " for " + compositePrice);
-        } else {
+        }
+        else {
             break;
         }
     }
@@ -185,4 +180,60 @@ function buyMaxNumberOfNf(ns, factionName) {
         ns.toast(ns.sprintf("Bought %d levels of %s", numberOfNf, CONSTANTS.AUGMENTATION_NEUROFLUX_GOVERNOR));
     }
     return numberOfNf;
+}
+
+function isReadyToInstall(
+    ns,
+    factionName,
+    unboughtAugmentsFromFaction,
+    favorToDonate,
+) {
+    let factionRep = ns.getFactionRep(factionName);
+    let highestAugmentRepReq = getHighestAugmentRepReqForFaction(ns, factionName, unboughtAugmentsFromFaction);
+
+    if (highestAugmentRepReq <= factionRep) {
+        return true
+    }
+
+    let factionFavorGain = ns.getFactionFavorGain(factionName);
+    if (factionFavorGain >= CONSTANTS.SINGULARITY_FACTION_FAVOR_GAIN_THRESHOLD) {
+        return true
+    }
+
+    let factionFavor = ns.getFactionFavor(factionName);
+    if (factionFavor < favorToDonate && factionFavorGain + factionFavor >= favorToDonate) {
+        return true;
+    }
+
+    if (factionName in CONSTANTS.FACTIONS_REP_THRESHOLDS) {
+        let lowestRepReq = getLowestRepReqOfUnboughtAugments(ns, unboughtAugmentsFromFaction);
+        let repThresholds = CONSTANTS.FACTIONS_REP_THRESHOLDS[factionName];
+        for (let i = 0 ; i < repThresholds.length ; i++) {
+            let repThreshold = repThresholds[i];
+            if (repThreshold < lowestRepReq) {
+                continue;
+            }
+
+            if (factionRep >= repThreshold) {
+                return true
+            }
+            break;
+        }
+    }
+
+    return false;
+}
+/** @param {import(".").NS } ns
+ * @param {string[]} unboughtAugmentsFromFaction
+ */
+function getLowestRepReqOfUnboughtAugments(ns, unboughtAugmentsFromFaction) {
+    let lowestRepReq = ns.getAugmentationRepReq(unboughtAugmentsFromFaction[0]);
+    for (let i = 1 ; i < unboughtAugmentsFromFaction.length ; i++) {
+        let augment = unboughtAugmentsFromFaction[i];
+        let augmentRepReq = ns.getAugmentationRepReq(augment);
+        if (augmentRepReq < lowestRepReq) {
+            lowestRepReq = augmentRepReq;
+        }
+    }
+    return lowestRepReq;
 }

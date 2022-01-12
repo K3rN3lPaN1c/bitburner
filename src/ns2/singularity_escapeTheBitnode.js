@@ -17,6 +17,7 @@ export async function main(ns) {
             for (let i = 0; i < pathToServer.length; i++) {
                 ns.connect(pathToServer[i]);
             }
+            ns.write("exit.txt", "1", "w");
             await ns.installBackdoor();
 
             ns.exit();

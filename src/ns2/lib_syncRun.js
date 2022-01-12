@@ -38,6 +38,7 @@ export async function syncRun(ns, scriptName, targetServer= SERVER_HOME, args) {
     while (ns.scriptRunning(scriptName, targetServer)) {
         await ns.sleep(1);
     }
+    exitCheck(ns);
 }
 
 /** @param {import("./index").NS } ns
@@ -48,5 +49,12 @@ export async function syncRunScripts(ns, scripts, targetServer = SERVER_HOME) {
     for (let i = 0 ; i < scripts.length ; i++) {
         let scriptToRun = scripts[i];
         await syncRun(ns, scriptToRun, targetServer);
+    }
+}
+
+/** @param {import(".").NS } ns */
+function exitCheck(ns) {
+    if (ns.fileExists("exit.txt")) {
+        ns.exit();
     }
 }

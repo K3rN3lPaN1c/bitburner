@@ -2,6 +2,10 @@ import * as CONSTANTS from "lib_constants.js";
 
 /** @param {import(".").NS } ns */
 export async function main(ns) {
+    if (CONSTANTS.SINGULARITY_WORK_TYPES_NOT_TO_INTERRUPT.includes(ns.getPlayer().workType)) {
+        return;
+    }
+
     let programNames = Object.keys(CONSTANTS.SINGULARITY_PROGRAMS_REQUIREMENTS);
     let hackLevel = ns.getPlayer().hacking;
 
