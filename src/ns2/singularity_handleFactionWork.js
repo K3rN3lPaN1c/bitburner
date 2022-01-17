@@ -23,8 +23,14 @@ export async function main(ns) {
         return;
     }
 
-    if (!ns.workForFaction(factionName, CONSTANTS.WORK_FACTION_HACKING_CONTRACTS)) {
-        ns.workForFaction(factionName, CONSTANTS.WORK_FACTION_SECURITY_WORK);
+    // if (!ns.workForFaction(factionName, CONSTANTS.WORK_FACTION_HACKING_CONTRACTS)) {
+    //     ns.workForFaction(factionName, CONSTANTS.WORK_FACTION_SECURITY_WORK);
+    // }
+
+    if (!ns.workForFaction(factionName, CONSTANTS.WORK_FACTION_SECURITY_WORK)) {
+        if (!ns.workForFaction(factionName, CONSTANTS.WORK_FACTION_FIELD_WORK)) {
+            ns.workForFaction(factionName, CONSTANTS.WORK_FACTION_HACKING_CONTRACTS);
+        }
     }
 
 }

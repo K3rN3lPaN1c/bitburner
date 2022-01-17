@@ -17,7 +17,9 @@ export async function main(ns) {
     rootServers = getRootServersList(ns, getServersList(ns));
     targetServerDetailsCollection = new ServerDetailsCollection(ns);
     botServerDetailsCollection = new ServerDetailsCollection(ns);
-    botServerDetailsCollection.add(new ServerDetails(ns, CONSTANTS.SERVER_HOME));
+    if (ns.getServerMaxRam(CONSTANTS.SERVER_HOME) > 128) {
+        botServerDetailsCollection.add(new ServerDetails(ns, CONSTANTS.SERVER_HOME));
+    }
 
     scanAndGatherTargetAndBotServers(ns, botServerDetailsCollection, targetServerDetailsCollection);
 

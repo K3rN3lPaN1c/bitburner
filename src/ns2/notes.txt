@@ -1,0 +1,14 @@
+Corporation tier list:
+Agriculture
+Energy
+Fish
+Utilities
+Software
+RealEstate
+Mining
+Food
+Comp
+Chem
+Pharma
+Tobacco
+HealthCare

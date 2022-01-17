@@ -7,14 +7,14 @@ import {downloadAllFiles} from "./lib_downloadAllFiles";
 export async function main(ns) {
     ns.toast("Running dispatcher", "info");
 
-    if (!ns.scriptRunning(CONSTANTS.SCRIPT_INFINITE_ATTACK, CONSTANTS.SERVER_HOME)) {
-        ns.exec(CONSTANTS.SCRIPT_INFINITE_ATTACK, CONSTANTS.SERVER_HOME);
+    if (ns.scriptRunning(CONSTANTS.SCRIPT_INFINITE_ATTACK, CONSTANTS.SERVER_HOME)) {
+        ns.kill(CONSTANTS.SCRIPT_INFINITE_ATTACK, CONSTANTS.SERVER_HOME);
     }
+    ns.exec(CONSTANTS.SCRIPT_INFINITE_ATTACK, CONSTANTS.SERVER_HOME);
 
     await downloadAllFiles(ns, CONSTANTS.SCRIPTS_BASE_URL, CONSTANTS.SCRIPTS);
 
     await syncRun(ns, CONSTANTS.SCRIPT_SINGULARITY_ESCAPE_THE_BITNODE);
-
 
     await syncRun(ns, CONSTANTS.SCRIPT_SET_NEXT_TARGET_FACTION);
     let nextFaction = ns.read("nextTargetFaction.txt");

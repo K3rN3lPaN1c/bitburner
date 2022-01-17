@@ -1,4 +1,4 @@
-const RESERVED_HOME_RAM = 50;
+const RESERVED_HOME_RAM = 64;
 
 export default class ServerDetails {
     /** @param {import(".").NS } #ns */

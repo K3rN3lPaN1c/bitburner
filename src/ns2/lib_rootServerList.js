@@ -6,7 +6,7 @@ export function getRootServersList(ns,allServers) {
 
     for (let i = 0 ; i < allServers.length ; i++) {
         let serverName = allServers[i];
-        if (ns.hasRootAccess(serverName)) {
+        if (ns.hasRootAccess(serverName) && serverName.indexOf("hacknet-node") !== 0) {
             servers.push(serverName);
         }
     }
